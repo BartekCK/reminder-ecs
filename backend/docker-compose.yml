@@ -1,0 +1,15 @@
+version: '3.9'
+
+services:
+  api:
+    build:
+      context: docker
+      target: development
+      dockerfile: docker/Dockerfile
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - ${APP_PORT}:${APP_PORT}
+    env_file:
+      - ./.env
