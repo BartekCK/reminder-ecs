@@ -12,8 +12,8 @@ export type OutcomeFailureProps<T = any> = {
 export abstract class OutcomeFailure<T = any> extends Result {
   protected readonly errorScope: ErrorScope;
   protected readonly outcome: "FAILURE" = "FAILURE";
-  protected readonly errorCode?: string;
-  protected readonly reason?: string;
+  protected readonly errorCode: string;
+  protected readonly reason: string;
   protected readonly context?: T;
 
   protected constructor({
