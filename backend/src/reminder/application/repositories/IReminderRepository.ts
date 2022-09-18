@@ -1,3 +1,5 @@
+import { IReminder } from "../../domain";
+
 export interface IReminderRepository {
-  save: () => Promise<void>;
+  save: (reminder: IReminder) => Promise<void>;
 }
