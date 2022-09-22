@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { IReminder, ReminderProps } from "./reminder.interface";
+import { IReminder, ReminderId, ReminderProps } from "./reminder.interface";
 import {
   ReminderCreateFailure,
   ReminderCreateResult,
@@ -7,7 +7,7 @@ import {
 } from "./behaviours/createResult";
 
 export class Reminder implements IReminder {
-  private constructor(props: ReminderProps) {}
+  private constructor(private readonly props: ReminderProps) {}
 
   public static create(data: {
     note: string;
@@ -32,7 +32,7 @@ export class Reminder implements IReminder {
 
     return ReminderCreateSuccess.create(
       new Reminder({
-        id: v4(),
+        id: v4() as ReminderId,
         userId,
         note,
         plannedExecutionDate,
@@ -48,4 +48,12 @@ export class Reminder implements IReminder {
   updateExecutionDate(): any {}
 
   updateNote(): any {}
+
+  getProps(): ReminderProps {
+    return this.props;
+  }
+
+  getId(): ReminderId {
+    return this.props.id;
+  }
 }

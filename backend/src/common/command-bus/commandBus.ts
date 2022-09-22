@@ -16,7 +16,9 @@ export class CommandBus implements ICommandBus {
     this.commandHandlers = commandHandlers;
   }
 
-  public execute<Command extends ICommand, R extends Result>(command: Command): R {
+  public execute<Command extends ICommand, R extends Result | Promise<Result>>(
+    command: Command
+  ): R {
     const handler = this.findCommandHandler(command);
 
     if (!handler) {

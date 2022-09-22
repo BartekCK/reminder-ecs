@@ -3,14 +3,11 @@ import { IActiveReminderPropsDto } from "../dto/ActiveReminder";
 import { HttpRequest, HttpResponse } from "../../../common/http";
 import { INewReminderPropsDto, newReminderPropsSchema } from "../dto/NewReminder";
 import { ZodError } from "zod";
+import { ICommandBus } from "../../../common/command-bus";
+import { CreateReminderCommand } from "../../application/commands/create-reminder/CreateReminderCommand";
 
 export class ReminderController implements IReminderController {
-  async getActiveReminders(
-    req: HttpRequest,
-    res: HttpResponse<IActiveReminderPropsDto>
-  ): Promise<void> {
-    res.status(200).send({ message: "Ala ma kota", date: new Date() });
-  }
+  constructor(private readonly commandBus: ICommandBus) {}
 
   async postCreateReminder(
     req: HttpRequest<INewReminderPropsDto>,
@@ -23,8 +20,8 @@ export class ReminderController implements IReminderController {
       return;
     }
 
-    const bodyData = bodyResult.data;
+    await this.commandBus.execute(new CreateReminderCommand(bodyResult.data));
 
-    res.status(201).send(bodyData);
+    res.status(201).send();
   }
 }

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { isoDateSchema } from "../../../../common/validation/isoDate.schema";
-import { ICommand } from "../../../../common/commandBus";
+import { ICommand } from "../../../../common/command-bus";
 
 export const createReminderCommandPayloadSchema = z.object({
   note: z.string(),
@@ -16,7 +16,7 @@ export class CreateReminderCommand implements ICreateReminderCommand {
   readonly plannedExecutionDate: Date;
   readonly userId: string;
 
-  constructor(note: string, plannedExecutionDate: Date, userId: string) {
+  constructor({ note, plannedExecutionDate, userId }: ICreateReminderCommand) {
     this.note = note;
     this.plannedExecutionDate = plannedExecutionDate;
     this.userId = userId;

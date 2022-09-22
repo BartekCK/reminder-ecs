@@ -1,7 +1,7 @@
 import { ApplicationFailure, OutcomeSuccess } from "../../../../common/error-handling";
 import { IReminderRepository } from "../../repositories";
 import { Reminder } from "../../../domain";
-import { ICommand, ICommandHandler } from "../../../../common/commandBus";
+import { ICommand, ICommandHandler } from "../../../../common/command-bus";
 import {
   createReminderCommandPayloadSchema,
   ICreateReminderCommand,
@@ -40,7 +40,9 @@ export class CreateReminderHandler
 
     const saveResult = await this.reminderRepository.save(reminder);
 
-    // TODO: Check if save is not error
+    if (saveResult.isFailure()) {
+      return ApplicationFailure.infrastructureError(saveResult);
+    }
 
     return CreateReminderCommandSuccess.create();
   }

@@ -32,4 +32,15 @@ export class ApplicationFailure extends OutcomeFailure<IContext | ZodError> {
       originalContext: context,
     });
   }
+
+  public static infrastructureError(failure: OutcomeFailure) {
+    const { errorScope, errorCode, context, reason } = failure.getError();
+
+    return new ApplicationFailure({
+      originalErrorScope: errorScope,
+      originalErrorCode: errorCode,
+      originalReason: reason,
+      originalContext: context,
+    });
+  }
 }
