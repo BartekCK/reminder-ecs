@@ -7,11 +7,7 @@ import {
   ICreateReminderCommand,
 } from "./CreateReminderCommand";
 
-export class CreateReminderCommandSuccess extends OutcomeSuccess {
-  public static create(): CreateReminderCommandSuccess {
-    return new CreateReminderCommandSuccess(null);
-  }
-}
+export class CreateReminderCommandSuccess extends OutcomeSuccess<null> {}
 
 export type CreateReminderCommandResult =
   | CreateReminderCommandSuccess
@@ -44,6 +40,6 @@ export class CreateReminderHandler
       return ApplicationFailure.infrastructureError(saveResult);
     }
 
-    return CreateReminderCommandSuccess.create();
+    return CreateReminderCommandSuccess.create(null);
   }
 }

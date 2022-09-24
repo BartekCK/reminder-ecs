@@ -25,4 +25,8 @@ export class EnvironmentLocalStore {
   getDynamoDbUrl(): string | undefined {
     return this.env.getProps().dynamoDBUrl;
   }
+
+  getPort(): number {
+    return Number(this.env.getProps().appPort);
+  }
 }

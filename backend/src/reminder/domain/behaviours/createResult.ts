@@ -33,10 +33,6 @@ export class ReminderCreateFailure extends OutcomeFailure<IContext> {
   }
 }
 
-export class ReminderCreateSuccess extends OutcomeSuccess<{ reminder: IReminder }> {
-  public static create(reminder: IReminder): ReminderCreateSuccess {
-    return new ReminderCreateSuccess({ reminder });
-  }
-}
+export class ReminderCreateSuccess extends OutcomeSuccess<{ reminder: IReminder }> {}
 
 export type ReminderCreateResult = ReminderCreateSuccess | ReminderCreateFailure;

@@ -1,17 +1,20 @@
 import express, { Express } from "express";
-import { environmentLocalStore } from "./common/environment";
-import reminderRouter from "./reminder/presentation/router";
-
-const PORT = process.env.PORT || 8080;
-const app: Express = express();
+import { DependencyInjector } from "./core/dependency-injector";
 
 class App {
   public static async main() {
-    const envService = await environmentLocalStore;
+    const app: Express = express();
+
+    await DependencyInjector.create();
+
+    const { reminderRouter, environmentLocalStore } =
+      DependencyInjector.getDependencies();
 
     app.use(express.json());
 
-    app.use("/reminders", reminderRouter);
+    app.use("/reminders", reminderRouter.getRouter());
+
+    const PORT = environmentLocalStore.getPort();
 
     app.listen(PORT, () => {
       console.log(`App started on port ${PORT} 🚀`);

@@ -33,7 +33,7 @@ export abstract class OutcomeFailure<T = any> extends Result {
     return this.outcome === "FAILURE";
   }
 
-  getError(): OutcomeFailureProps {
+  getError(): OutcomeFailureProps<T> {
     return {
       context: this.context,
       reason: this.reason,

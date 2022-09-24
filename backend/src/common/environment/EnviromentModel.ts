@@ -2,6 +2,8 @@ import { z } from "zod";
 
 const envModelSchema = z.object({
   awsRegion: z.string(),
+  appPort: z.string(),
+  environment: z.string(),
   dynamoDBUrl: z.string().optional(),
 });
 

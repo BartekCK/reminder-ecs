@@ -30,15 +30,15 @@ export class Reminder implements IReminder {
       return ReminderCreateFailure.noteIsEmpty(userId);
     }
 
-    return ReminderCreateSuccess.create(
-      new Reminder({
+    return ReminderCreateSuccess.create({
+      reminder: new Reminder({
         id: v4() as ReminderId,
         userId,
         note,
         plannedExecutionDate,
         executedAt: null,
-      })
-    );
+      }),
+    });
   }
 
   delete(): any {}
