@@ -3,14 +3,15 @@ import { IActiveReminderPropsDto } from "../dto/ActiveReminder";
 import { HttpRequest, HttpResponse } from "../../../common/http";
 import { INewReminderPropsDto, newReminderPropsSchema } from "../dto/NewReminder";
 import { ZodError } from "zod";
+import { ICommandBus } from "../../../common/command-bus";
+import {
+  CreateReminderCommand,
+  ICreateReminderCommand,
+} from "../../application/commands/create-reminder/CreateReminderCommand";
+import { CreateReminderCommandResult } from "../../application/commands/create-reminder/CreateReminderHandler";
 
 export class ReminderController implements IReminderController {
-  async getActiveReminders(
-    req: HttpRequest,
-    res: HttpResponse<IActiveReminderPropsDto>
-  ): Promise<void> {
-    res.status(200).send({ message: "Ala ma kota", date: new Date() });
-  }
+  constructor(private readonly commandBus: ICommandBus) {}
 
   async postCreateReminder(
     req: HttpRequest<INewReminderPropsDto>,
@@ -19,12 +20,20 @@ export class ReminderController implements IReminderController {
     const bodyResult = newReminderPropsSchema.safeParse(req.body);
 
     if (!bodyResult.success) {
-      res.send(bodyResult.error).status(400);
+      res.status(400).send(bodyResult.error);
       return;
     }
 
-    const bodyData = bodyResult.data;
+    const result = await this.commandBus.execute<
+      ICreateReminderCommand,
+      CreateReminderCommandResult
+    >(new CreateReminderCommand(bodyResult.data));
 
-    res.status(201).send(bodyData);
+    if (result.isFailure()) {
+      const error = result.getError();
+      error.
+    }
+
+    res.status(201).send();
   }
 }
