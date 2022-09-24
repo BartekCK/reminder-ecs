@@ -1,4 +1,8 @@
-import { OutcomeFailure, OutcomeSuccess } from "../../../common/error-handling";
+import {
+  InvalidEventFailure,
+  OutcomeFailure,
+  OutcomeSuccess,
+} from "../../../common/error-handling";
 import { IReminder } from "../reminder.interface";
 
 interface IContext {
@@ -35,4 +39,7 @@ export class ReminderCreateFailure extends OutcomeFailure<IContext> {
 
 export class ReminderCreateSuccess extends OutcomeSuccess<{ reminder: IReminder }> {}
 
-export type ReminderCreateResult = ReminderCreateSuccess | ReminderCreateFailure;
+export type ReminderCreateResult =
+  | ReminderCreateSuccess
+  | ReminderCreateFailure
+  | InvalidEventFailure;

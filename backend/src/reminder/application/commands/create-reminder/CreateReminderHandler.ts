@@ -3,6 +3,7 @@ import { IReminderRepository } from "../../repositories";
 import { Reminder } from "../../../domain";
 import { ICommand, ICommandHandler } from "../../../../common/command-bus";
 import {
+  CreateReminderCommand,
   createReminderCommandPayloadSchema,
   ICreateReminderCommand,
 } from "./CreateReminderCommand";
@@ -26,7 +27,10 @@ export class CreateReminderHandler
       return ApplicationFailure.invalidPayload(validationResult.error);
     }
 
-    const createReminderResult = Reminder.create(validationResult.data);
+    const createReminderResult = Reminder.create(validationResult.data, {
+      traceId: command.traceId,
+      commandName: CreateReminderCommand.name,
+    });
 
     if (createReminderResult.isFailure()) {
       return ApplicationFailure.domainError(createReminderResult);

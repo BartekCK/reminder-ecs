@@ -1,8 +1,8 @@
 import { DomainEvent } from "../../../../common/events";
 import {
-  createReminderDomainEventSchema,
-  ICreateReminderDomainEvent,
-} from "./createReminderProps.interface";
+  createReminderDomainEventPayloadSchema,
+  ICreateReminderDomainEventPayload,
+} from "./createReminderPayload.interface";
 import { CreateReminderDomainEventSuccess } from "./CreateReminderDomainEventSuccess";
 import { v4 } from "uuid";
 import { InvalidEventFailure } from "../../../../common/error-handling";
@@ -11,29 +11,30 @@ type CreateReminderDomainEventResult =
   | CreateReminderDomainEventSuccess
   | InvalidEventFailure;
 
-export class CreateReminderDomainEvent extends DomainEvent<ICreateReminderDomainEvent> {
-  private constructor(props: ICreateReminderDomainEvent) {
+export class CreateReminderDomainEvent extends DomainEvent<ICreateReminderDomainEventPayload> {
+  private constructor(props: ICreateReminderDomainEventPayload) {
     super(props);
   }
 
   public static create(
-    payload: ICreateReminderDomainEvent["payload"],
-    context: { entityId: string; commandId: string; sequence: number }
+    payload: ICreateReminderDomainEventPayload["payload"],
+    context: { entityId: string; traceId: string; sequence: number; commandName: string }
   ): CreateReminderDomainEventResult {
-    const data: ICreateReminderDomainEvent = {
+    const data: ICreateReminderDomainEventPayload = {
       id: v4(),
       name: CreateReminderDomainEvent.name,
       payload,
       entityId: context.entityId,
       metadata: {
-        traceId: context.commandId,
+        traceId: context.traceId,
         generatedAt: new Date(),
+        commandName: context.commandName,
       },
       sequence: context.sequence + 1,
       version: 1,
     };
 
-    const parseResult = createReminderDomainEventSchema.safeParse(data);
+    const parseResult = createReminderDomainEventPayloadSchema.safeParse(data);
 
     if (!parseResult.success) {
       return InvalidEventFailure.create({

@@ -12,11 +12,13 @@ export type ICreateReminderCommand = z.infer<typeof createReminderCommandPayload
   ICommand;
 
 export class CreateReminderCommand implements ICreateReminderCommand {
+  readonly traceId: string;
   readonly note: string;
   readonly plannedExecutionDate: Date;
   readonly userId: string;
 
-  constructor({ note, plannedExecutionDate, userId }: ICreateReminderCommand) {
+  constructor({ note, plannedExecutionDate, userId, traceId }: ICreateReminderCommand) {
+    this.traceId = traceId;
     this.note = note;
     this.plannedExecutionDate = plannedExecutionDate;
     this.userId = userId;

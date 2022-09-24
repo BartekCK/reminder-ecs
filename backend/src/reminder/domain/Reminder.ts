@@ -5,15 +5,22 @@ import {
   ReminderCreateResult,
   ReminderCreateSuccess,
 } from "./behaviours/createResult";
+import { AggregateRoot } from "../../common/domain";
+import { CreateReminderDomainEvent } from "./events/createReminder/CreateReminderDomainEvent";
 
-export class Reminder implements IReminder {
-  private constructor(private readonly props: ReminderProps) {}
+export class Reminder extends AggregateRoot implements IReminder {
+  private constructor(private readonly props: ReminderProps) {
+    super();
+  }
 
-  public static create(data: {
-    note: string;
-    plannedExecutionDate?: Date;
-    userId: string;
-  }): ReminderCreateResult {
+  public static create(
+    data: {
+      note: string;
+      plannedExecutionDate?: Date;
+      userId: string;
+    },
+    context: { traceId: string; commandName: string }
+  ): ReminderCreateResult {
     const { note, userId, plannedExecutionDate } = data;
 
     const currentTime = Date.now();
@@ -30,14 +37,36 @@ export class Reminder implements IReminder {
       return ReminderCreateFailure.noteIsEmpty(userId);
     }
 
-    return ReminderCreateSuccess.create({
-      reminder: new Reminder({
-        id: v4() as ReminderId,
-        userId,
+    const reminder = new Reminder({
+      id: v4() as ReminderId,
+      userId,
+      note,
+      plannedExecutionDate,
+      executedAt: null,
+    });
+
+    const event = CreateReminderDomainEvent.create(
+      {
         note,
+        userId,
         plannedExecutionDate,
-        executedAt: null,
-      }),
+      },
+      {
+        entityId: reminder.getId(),
+        sequence: 0,
+        traceId: context.traceId,
+        commandName: context.commandName,
+      }
+    );
+
+    if (event.isFailure()) {
+      return event;
+    }
+
+    reminder.addDomainEvent(event.getData());
+
+    return ReminderCreateSuccess.create({
+      reminder,
     });
   }
 
