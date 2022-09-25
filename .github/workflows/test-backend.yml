@@ -19,6 +19,10 @@ jobs:
           DOCKER_HOST: unix:///var/run/docker.sock
           
     runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: AlaHasCat
+      AWS_SECRET_ACCESS_KEY: AlaHasCat
+      AWS_DEFAULT_REGION: eu-central-1
 
     strategy:
       matrix:
