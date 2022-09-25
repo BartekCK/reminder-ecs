@@ -1,6 +1,12 @@
 import { IEnvModelProps } from "../EnviromentModel";
 
-const requiredEnvNames = ["AWS_REGION", "DYNAMO_DB_URL", "APP_PORT", "NODE_ENV"];
+const requiredEnvNames = [
+  "AWS_REGION",
+  "DYNAMO_DB_URL",
+  "APP_PORT",
+  "NODE_ENV",
+  "EVENTS_TABLE_NAME",
+];
 type RequiredEnvNamesObjType = { [P in typeof requiredEnvNames[number]]: string };
 
 export abstract class EnvironmentLocalStoreFactory {
@@ -16,6 +22,7 @@ export abstract class EnvironmentLocalStoreFactory {
       dynamoDBUrl: dirtyEnvs.DYNAMO_DB_URL,
       appPort: dirtyEnvs.APP_PORT,
       environment: dirtyEnvs.NODE_ENV,
+      eventsTableName: dirtyEnvs.EVENTS_TABLE_NAME,
     };
   };
 

@@ -5,6 +5,7 @@ const envModelSchema = z.object({
   appPort: z.string(),
   environment: z.string(),
   dynamoDBUrl: z.string().optional(),
+  eventsTableName: z.string(),
 });
 
 export type IEnvModelProps = z.infer<typeof envModelSchema>;

@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon src/app.ts",
     "build": "rimraf dist && tsc",
-    "test": "jest --runInBand --verbose"
+    "pretest": "chmod u+x ./scripts/localDynamoDBBootstrap.sh && TABLE_NAME=test_events ./scripts/localDynamoDBBootstrap.sh",
+    "test": "jest --runInBand --verbose",
+    "posttest": "chmod u+x ./scripts/localDynamoDBClear.sh && TABLE_NAME=test_events ./scripts/localDynamoDBClear.sh"
   },
   "author": "",
   "license": "ISC",

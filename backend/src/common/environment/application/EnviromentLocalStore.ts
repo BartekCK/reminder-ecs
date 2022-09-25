@@ -29,4 +29,8 @@ export class EnvironmentLocalStore {
   getPort(): number {
     return Number(this.env.getProps().appPort);
   }
+
+  getEventsTableName(): string {
+    return this.env.getProps().eventsTableName;
+  }
 }
