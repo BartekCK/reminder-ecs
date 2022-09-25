@@ -28,6 +28,7 @@ jobs:
 
     steps:
     - name: Checkout
+      working-directory: ./backend
       uses: actions/checkout@v3
       
     - name: Use Node.js ${{ matrix.node-version }}
