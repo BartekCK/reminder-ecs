@@ -1,186 +1,67 @@
 import { ReminderRepository } from "../ReminderRepository";
-import { IReminderRepository } from "../../../application/repositories";
-// import { DynamoDB } from "aws-sdk";
 import {
-  CreateTableCommand,
-  DynamoDBClient,
-  PutItemCommand,
-  QueryCommand,
-  ScanCommand,
-  ScanCommandOutput,
-} from "@aws-sdk/client-dynamodb";
+  IReminderRepository,
+  SaveReminderSuccess,
+} from "../../../application/repositories";
+import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
+import { EventDBMapper } from "../../../../core/database";
+import { EnvironmentLocalStore } from "../../../../common/environment/application/EnviromentLocalStore";
+import { OsEnvironment } from "../../../../common/environment/infrastructure/OsEnviroment";
+import { ReminderMock } from "../../../../__tests__/mocks";
 
 describe("ReminderRepository", () => {
   let reminderRepository: IReminderRepository;
+  let dbClient: DynamoDBClient;
+  let environmentLocalStore: EnvironmentLocalStore;
 
-  const client = new DynamoDBClient({
-    endpoint: "http://localhost:4566",
-    region: "eu-central-1",
+  beforeAll(async () => {
+    environmentLocalStore = await EnvironmentLocalStore.create(new OsEnvironment());
+
+    dbClient = new DynamoDBClient({
+      region: environmentLocalStore.getAwsRegion(),
+      endpoint: environmentLocalStore.getDynamoDbUrl(),
+    });
+
+    const mapper = new EventDBMapper();
+
+    const tableName = environmentLocalStore.getEventsTableName();
+    reminderRepository = new ReminderRepository(dbClient, mapper, tableName);
   });
 
-  beforeAll(() => {
-    // reminderRepository = new ReminderRepository();
-  });
+  describe("Given reminder domain", () => {
+    const reminder = ReminderMock.create();
 
-  describe('GIVEN "reminder" object', () => {
-    describe("WHEN save first time", () => {
-      it("THEN should persist reminder", async () => {
-        // await reminderRepository.save();
+    describe("when reminderRepository was called", () => {
+      let saveResult: SaveReminderSuccess;
+
+      beforeAll(async () => {
+        const result = await reminderRepository.save(reminder);
+
+        if (result.isFailure()) {
+          throw new Error("Should return SUCCESS");
+        }
+
+        saveResult = result;
+      });
+
+      it("then result should contain domain id", async () => {
+        expect(saveResult.getData().reminderId).toEqual(reminder.getId());
+      });
+
+      it("then should save all events", async () => {
+        const sendResult = await dbClient.send(
+          new QueryCommand({
+            TableName: environmentLocalStore.getEventsTableName(),
+            ExpressionAttributeValues: {
+              ":entityId": { S: reminder.getId() },
+            },
+            KeyConditionExpression: "entityId = :entityId",
+          })
+        );
+
+        expect(sendResult.Items).toBeDefined();
+        expect(sendResult.Items).toHaveLength(1);
       });
     });
-  });
-
-  it("createTable", async () => {
-    await client.send(
-      new CreateTableCommand({
-        TableName: "subscriptions",
-        AttributeDefinitions: [
-          {
-            AttributeName: "productId",
-            AttributeType: "S",
-          },
-          {
-            AttributeName: "customerEmail",
-            AttributeType: "S",
-          },
-        ],
-        KeySchema: [
-          {
-            KeyType: "HASH",
-            AttributeName: "productId",
-          },
-          {
-            KeyType: "RANGE",
-            AttributeName: "customerEmail",
-          },
-        ],
-        BillingMode: "PAY_PER_REQUEST",
-      })
-    );
-  });
-
-  it("should create items", async () => {
-    await client.send(
-      new PutItemCommand({
-        TableName: "subscriptions",
-        Item: {
-          productId: {
-            S: "1",
-          },
-
-          customerEmail: {
-            S: "Bartek",
-          },
-
-          createdAt: {
-            S: new Date().toDateString(),
-          },
-        },
-      })
-    );
-
-    await client.send(
-      new PutItemCommand({
-        TableName: "subscriptions",
-        Item: {
-          productId: {
-            S: "1",
-          },
-
-          customerEmail: {
-            S: "Marek",
-          },
-
-          createdAt: {
-            S: new Date().toDateString(),
-          },
-        },
-      })
-    );
-
-    await client.send(
-      new PutItemCommand({
-        TableName: "subscriptions",
-        Item: {
-          productId: {
-            S: "1",
-          },
-
-          customerEmail: {
-            S: "Wojtek",
-          },
-
-          createdAt: {
-            S: new Date().toDateString(),
-          },
-        },
-      })
-    );
-
-    await client.send(
-      new PutItemCommand({
-        TableName: "subscriptions",
-        Item: {
-          productId: {
-            S: "2",
-          },
-
-          customerEmail: {
-            S: "Wojtek",
-          },
-
-          createdAt: {
-            S: new Date().toDateString(),
-          },
-        },
-      })
-    );
-    await client.send(
-      new PutItemCommand({
-        TableName: "subscriptions",
-        Item: {
-          productId: {
-            S: "3",
-          },
-
-          customerEmail: {
-            S: "Bartek",
-          },
-
-          createdAt: {
-            S: new Date().toDateString(),
-          },
-        },
-      })
-    );
-  });
-
-  it("Add date to table", async () => {
-    let lastItem: any = null;
-    let isMoreItems = false;
-
-    const batchSize: number = 3;
-
-    do {
-      const queryResult = await client.send(
-        new ScanCommand({
-          TableName: "subscriptions",
-          ProjectionExpression: "productId, customerEmail",
-          FilterExpression: "productId = :productId",
-          ExpressionAttributeValues: {
-            ":productId": { S: "1" },
-          },
-          Limit: batchSize,
-          ExclusiveStartKey: lastItem,
-        })
-      );
-
-      lastItem = queryResult.Items
-        ? queryResult.Items[queryResult.Items.length - 1]
-        : null;
-      isMoreItems =
-        (queryResult?.Items && queryResult.Items?.length >= batchSize) || false;
-      console.log(queryResult.Items);
-    } while (isMoreItems && lastItem);
   });
 });

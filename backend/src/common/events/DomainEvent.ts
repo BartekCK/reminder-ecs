@@ -6,4 +6,8 @@ export abstract class DomainEvent<T = IDomainEventPayload> {
   protected constructor(props: T) {
     this.props = props;
   }
+
+  public getProps(): T {
+    return this.props;
+  }
 }

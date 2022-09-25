@@ -9,6 +9,7 @@ import {
   ICreateReminderCommand,
 } from "../../application/commands/create-reminder/CreateReminderCommand";
 import { CreateReminderCommandResult } from "../../application/commands/create-reminder/CreateReminderHandler";
+import { v4 } from "uuid";
 
 export class ReminderController implements IReminderController {
   constructor(private readonly commandBus: ICommandBus) {}
@@ -27,11 +28,10 @@ export class ReminderController implements IReminderController {
     const result = await this.commandBus.execute<
       ICreateReminderCommand,
       CreateReminderCommandResult
-    >(new CreateReminderCommand(bodyResult.data));
+    >(new CreateReminderCommand({ ...bodyResult.data, traceId: v4() }));
 
     if (result.isFailure()) {
       const error = result.getError();
-      error.
     }
 
     res.status(201).send();

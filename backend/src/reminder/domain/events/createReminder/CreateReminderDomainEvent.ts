@@ -17,13 +17,13 @@ export class CreateReminderDomainEvent extends DomainEvent<ICreateReminderDomain
   }
 
   public static create(
-    payload: ICreateReminderDomainEventPayload["payload"],
+    data: ICreateReminderDomainEventPayload["data"],
     context: { entityId: string; traceId: string; sequence: number; commandName: string }
   ): CreateReminderDomainEventResult {
-    const data: ICreateReminderDomainEventPayload = {
+    const payload: ICreateReminderDomainEventPayload = {
       id: v4(),
       name: CreateReminderDomainEvent.name,
-      payload,
+      data,
       entityId: context.entityId,
       metadata: {
         traceId: context.traceId,
@@ -34,7 +34,7 @@ export class CreateReminderDomainEvent extends DomainEvent<ICreateReminderDomain
       version: 1,
     };
 
-    const parseResult = createReminderDomainEventPayloadSchema.safeParse(data);
+    const parseResult = createReminderDomainEventPayloadSchema.safeParse(payload);
 
     if (!parseResult.success) {
       return InvalidEventFailure.create({
@@ -43,6 +43,8 @@ export class CreateReminderDomainEvent extends DomainEvent<ICreateReminderDomain
       });
     }
 
-    return CreateReminderDomainEventSuccess.create(new CreateReminderDomainEvent(data));
+    return CreateReminderDomainEventSuccess.create(
+      new CreateReminderDomainEvent(payload)
+    );
   }
 }

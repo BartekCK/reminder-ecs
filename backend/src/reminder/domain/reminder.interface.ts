@@ -1,6 +1,8 @@
+import { IAggregateRoot } from "../../common/domain/aggregateRoot.interface";
+
 export type ReminderId = string;
 
-export interface IReminder {
+export interface IReminder extends IAggregateRoot {
   delete: () => any;
   markAsResolved: () => any;
   updateNote: () => any;

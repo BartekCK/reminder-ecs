@@ -8,13 +8,14 @@ import {
 import { Result } from "../../common/error-handling";
 import { CreateReminderCommand } from "../../reminder/application/commands/create-reminder/CreateReminderCommand";
 import { CreateReminderHandler } from "../../reminder/application/commands/create-reminder/CreateReminderHandler";
-import { DynamoDB } from "aws-sdk";
 import { IReminderRepository } from "../../reminder/application/repositories";
 import { EnvironmentLocalStore } from "../../common/environment/application/EnviromentLocalStore";
 import { SsmEnvironment } from "../../common/environment/infrastructure/SsmEnviroment";
 import { OsEnvironment } from "../../common/environment/infrastructure/OsEnviroment";
 import { ReminderController } from "../../reminder/presentation/controllers/ReminderController";
 import { ReminderRouter } from "../../reminder/presentation/reminderRouter";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { EventDBMapper } from "../database";
 
 export interface IDependencies {
   reminderRepository: IReminderRepository;
@@ -48,12 +49,17 @@ export class DependencyInjector {
       process.env.NODE_ENV === "production" ? new SsmEnvironment() : new OsEnvironment()
     );
 
-    const databaseClient: DynamoDB = new DynamoDB({
+    const eventDatabaseMapper = new EventDBMapper();
+
+    const databaseClient: DynamoDBClient = new DynamoDBClient({
       region: environmentLocalStore.getAwsRegion(),
       endpoint: environmentLocalStore.getDynamoDbUrl(),
     });
 
-    const reminderRepository = new ReminderRepository(databaseClient);
+    const reminderRepository = new ReminderRepository(
+      databaseClient,
+      eventDatabaseMapper
+    );
 
     const createReminderHandler = new CreateReminderHandler(reminderRepository);
 

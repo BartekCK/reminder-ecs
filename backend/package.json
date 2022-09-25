@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon src/app.ts",
     "build": "rimraf dist && tsc",
-    "test": "jest --runInBand --verbose"
+    "pretest": "chmod u+x ./scripts/localDynamoDBBootstrap.sh && TABLE_NAME=test_events_table ./scripts/localDynamoDBBootstrap.sh",
+    "test": "jest --runInBand --verbose",
+    "posttest": "chmod u+x ./scripts/localDynamoDBClear.sh && TABLE_NAME=test_events_table ./scripts/localDynamoDBClear.sh"
   },
   "author": "",
   "license": "ISC",
@@ -29,7 +31,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.172.0",
-    "aws-sdk": "^2.1218.0",
     "date-fns": "^2.29.3",
     "express": "^4.18.1",
     "uuid": "^8.0.0",
