@@ -42,7 +42,15 @@ jobs:
     - name: Install all app dependencies
       working-directory: ./backend
       run: npm ci
-      
+
+    - name: Check typescript types
+      working-directory: ./backend
+      run: npm run check-types
+
+    - name: Check lint
+      working-directory: ./backend
+      run: npm run lint
+
     - name: Run test
       working-directory: ./backend
       run: npm test
