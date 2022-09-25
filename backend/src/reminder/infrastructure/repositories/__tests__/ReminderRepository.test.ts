@@ -12,9 +12,10 @@ import { ReminderMock } from "../../../../__tests__/mocks";
 describe("ReminderRepository", () => {
   let reminderRepository: IReminderRepository;
   let dbClient: DynamoDBClient;
+  let environmentLocalStore: EnvironmentLocalStore;
 
   beforeAll(async () => {
-    const environmentLocalStore = await EnvironmentLocalStore.create(new OsEnvironment());
+    environmentLocalStore = await EnvironmentLocalStore.create(new OsEnvironment());
 
     dbClient = new DynamoDBClient({
       region: environmentLocalStore.getAwsRegion(),
@@ -23,7 +24,8 @@ describe("ReminderRepository", () => {
 
     const mapper = new EventDBMapper();
 
-    reminderRepository = new ReminderRepository(dbClient, mapper);
+    const tableName = environmentLocalStore.getEventsTableName();
+    reminderRepository = new ReminderRepository(dbClient, mapper, tableName);
   });
 
   describe("Given reminder domain", () => {
@@ -49,7 +51,7 @@ describe("ReminderRepository", () => {
       it("then should save all events", async () => {
         const sendResult = await dbClient.send(
           new QueryCommand({
-            TableName: "events",
+            TableName: environmentLocalStore.getEventsTableName(),
             ExpressionAttributeValues: {
               ":entityId": { S: reminder.getId() },
             },

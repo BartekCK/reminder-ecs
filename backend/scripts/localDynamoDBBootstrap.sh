@@ -11,7 +11,7 @@ create_dynamo_db_table() {
 }
 
 
-echo "START CREATING DATABASE"
+echo "START CREATING DYNAMO_DB TABLE"
 create_dynamo_db_table
-echo "FINISH CREATING DATABASE"
+echo "FINISH CREATING DYNAMO_DB TABLE"
 

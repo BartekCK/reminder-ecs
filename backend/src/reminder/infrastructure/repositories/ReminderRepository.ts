@@ -12,7 +12,7 @@ export class ReminderRepository implements IReminderRepository {
   constructor(
     private readonly client: DynamoDBClient,
     private readonly mapper: IEventDBMapper,
-    private readonly dbName: string = "events"
+    private readonly dbName: string
   ) {}
 
   async save(reminder: IReminder): Promise<SaveReminderResult> {
