@@ -1,3 +1,3 @@
 export interface ICommand {
-  traceId: string;
+	traceId: string;
 }

@@ -5,5 +5,5 @@ export class SaveReminderSuccess extends OutcomeSuccess<{ reminderId: ReminderId
 export type SaveReminderResult = SaveReminderSuccess | DatabaseFailure;
 
 export interface IReminderRepository {
-  save: (reminder: IReminder) => Promise<SaveReminderResult>;
+	save: (reminder: IReminder) => Promise<SaveReminderResult>;
 }

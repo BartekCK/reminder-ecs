@@ -1,4 +1,4 @@
 export interface IActiveReminderPropsDto {
-  message: string;
-  date: Date;
+	message: string;
+	date: Date;
 }
