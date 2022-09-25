@@ -28,17 +28,15 @@ jobs:
 
     steps:
     - name: Checkout
-      working-directory: ./backend
       uses: actions/checkout@v3
       
     - name: Use Node.js ${{ matrix.node-version }}
-      working-directory: ./backend
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         
-    - name: Instal all app dependencies
+    - name: Install all app dependencies
       working-directory: ./backend
       run: npm ci
       
