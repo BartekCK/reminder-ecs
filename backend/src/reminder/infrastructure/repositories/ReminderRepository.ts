@@ -1,48 +1,37 @@
-import { DynamoDB } from "aws-sdk";
+import { BatchWriteItemCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
   IReminderRepository,
   SaveReminderResult,
   SaveReminderSuccess,
 } from "../../application/repositories";
 import { IReminder } from "../../domain";
+import { WriteRequest } from "@aws-sdk/client-dynamodb/dist-types/models/models_0";
+import { IEventDBMapper } from "../../../common/database";
 
 export class ReminderRepository implements IReminderRepository {
-  constructor(private readonly client: DynamoDB) {}
+  constructor(
+    private readonly client: DynamoDBClient,
+    private readonly mapper: IEventDBMapper,
+    private readonly dbName: string = "events"
+  ) {}
 
   async save(reminder: IReminder): Promise<SaveReminderResult> {
-    // const client = new DynamoDB({
-    //   endpoint: "http://localhost:4566",
-    //   region: "eu-central-1",
-    // });
-    //
-    // const params: PutItemInput = {
-    //   TableName: "reminders",
-    //
-    //   Item: {
-    //     id: {
-    //       S: v4(),
-    //     },
-    //     userId: {
-    //       S: v4(),
-    //     },
-    //     text: {
-    //       S: faker.lorem.slug(),
-    //     },
-    //     createdAt: {
-    //       S: new Date().toISOString(),
-    //     },
-    //   },
-    //   ReturnValues: "ALL_NEW",
-    // };
-    //
-    // try {
-    //   const result = await client.putItem(params).promise();
-    //   console.log(result);
-    // } catch (e) {
-    //   console.log("ERROR");
-    //   console.log(e);
-    // }
+    const events = reminder.getChanges();
 
-    return SaveReminderSuccess.create(reminder.getId());
+    const putRequests: WriteRequest[] = events.map((event) => ({
+      PutRequest: {
+        Item: this.mapper.mapDomainEventPayloadIntoEventItem(event.getProps()),
+      },
+    }));
+
+    await this.client.send(
+      new BatchWriteItemCommand({
+        RequestItems: {
+          [this.dbName]: putRequests,
+        },
+      })
+    );
+
+    return SaveReminderSuccess.create({ reminderId: reminder.getId() });
   }
 }

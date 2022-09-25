@@ -29,7 +29,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.172.0",
-    "aws-sdk": "^2.1218.0",
     "date-fns": "^2.29.3",
     "express": "^4.18.1",
     "uuid": "^8.0.0",

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { isoDateSchema } from "../../../../common/validation";
 
 export const createReminderDomainEventPayloadSchema = domainEventPayloadSchema.extend({
-  payload: z.object({
+  data: z.object({
     note: z.string(),
     plannedExecutionDate: isoDateSchema.optional(),
     userId: z.string().uuid(),

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { isoDateSchema } from "../validation";
 
-export const domainEventPayloadSchema = z.object({
+export const domainEventPayloadSchema = z.strictObject({
   id: z.string().uuid(),
   name: z.string(),
   version: z.number().int(),
@@ -12,7 +12,7 @@ export const domainEventPayloadSchema = z.object({
     generatedAt: isoDateSchema,
     commandName: z.string(),
   }),
-  payload: z.any(),
+  data: z.any(),
 });
 
 export type IDomainEventPayload = z.infer<typeof domainEventPayloadSchema>;
