@@ -2,8 +2,8 @@ import { ICommand } from "./command.interface";
 import { Result } from "../error-handling";
 
 export interface ICommandHandler<
-  Command extends ICommand,
-  R extends Result | Promise<Result>
+	Command extends ICommand,
+	R extends Result | Promise<Result>
 > {
-  handle: (command: Command) => R;
+	handle: (command: Command) => R;
 }

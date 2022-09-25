@@ -1,3 +1,3 @@
 import { Request } from "express";
 
-export interface HttpRequest<Body = any> extends Request<any, any, Body> {}
+export type HttpRequest<Body = any> = Request<any, any, Body>;

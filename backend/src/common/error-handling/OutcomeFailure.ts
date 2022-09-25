@@ -3,42 +3,42 @@ import { Result } from "./Result";
 export type ErrorScope = "DOMAIN_ERROR" | "INFRASTRUCTURE_ERROR" | "APPLICATION_ERROR";
 
 export type OutcomeFailureProps<T = any> = {
-  errorScope: ErrorScope;
-  errorCode: string;
-  reason: string;
-  context?: T;
+	errorScope: ErrorScope;
+	errorCode: string;
+	reason: string;
+	context?: T;
 };
 
 export abstract class OutcomeFailure<T = any> extends Result {
-  protected readonly errorScope: ErrorScope;
-  protected readonly outcome: "FAILURE" = "FAILURE";
-  protected readonly errorCode: string;
-  protected readonly reason: string;
-  protected readonly context?: T;
+	protected readonly errorScope: ErrorScope;
+	protected readonly outcome = "FAILURE" as const;
+	protected readonly errorCode: string;
+	protected readonly reason: string;
+	protected readonly context?: T;
 
-  protected constructor({
-    errorScope,
-    errorCode,
-    reason,
-    context,
-  }: OutcomeFailureProps<T>) {
-    super("FAILURE");
-    this.errorScope = errorScope;
-    this.errorCode = errorCode;
-    this.reason = reason;
-    this.context = context;
-  }
+	protected constructor({
+		errorScope,
+		errorCode,
+		reason,
+		context,
+	}: OutcomeFailureProps<T>) {
+		super("FAILURE");
+		this.errorScope = errorScope;
+		this.errorCode = errorCode;
+		this.reason = reason;
+		this.context = context;
+	}
 
-  isFailure(): this is OutcomeFailure {
-    return this.outcome === "FAILURE";
-  }
+	isFailure(): this is OutcomeFailure {
+		return this.outcome === "FAILURE";
+	}
 
-  getError(): OutcomeFailureProps<T> {
-    return {
-      context: this.context,
-      reason: this.reason,
-      errorCode: this.errorCode,
-      errorScope: this.errorScope,
-    };
-  }
+	getError(): OutcomeFailureProps<T> {
+		return {
+			context: this.context,
+			reason: this.reason,
+			errorCode: this.errorCode,
+			errorScope: this.errorScope,
+		};
+	}
 }

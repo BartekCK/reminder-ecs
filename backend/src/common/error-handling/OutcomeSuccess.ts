@@ -1,23 +1,23 @@
 import { Result } from "./Result";
 
 export abstract class OutcomeSuccess<T = any> extends Result {
-  private readonly data: T;
+	private readonly data: T;
 
-  protected constructor(data: T) {
-    super("SUCCESS");
+	protected constructor(data: T) {
+		super("SUCCESS");
 
-    this.data = data;
-  }
+		this.data = data;
+	}
 
-  getData(): T {
-    return this.data;
-  }
+	getData(): T {
+		return this.data;
+	}
 
-  isSuccess(): this is OutcomeSuccess<T> {
-    return this.outcome === "SUCCESS";
-  }
+	isSuccess(): this is OutcomeSuccess<T> {
+		return this.outcome === "SUCCESS";
+	}
 
-  public static create<T>(data: T): OutcomeSuccess<T> {
-    return new (class extends OutcomeSuccess<T> {})(data);
-  }
+	public static create<T>(data: T): OutcomeSuccess<T> {
+		return new (class extends OutcomeSuccess<T> {})(data);
+	}
 }

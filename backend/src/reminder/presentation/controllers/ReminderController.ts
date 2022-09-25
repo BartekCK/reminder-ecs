@@ -5,35 +5,35 @@ import { INewReminderPropsDto, newReminderPropsSchema } from "../dto/NewReminder
 import { ZodError } from "zod";
 import { ICommandBus } from "../../../common/command-bus";
 import {
-  CreateReminderCommand,
-  ICreateReminderCommand,
+	CreateReminderCommand,
+	ICreateReminderCommand,
 } from "../../application/commands/create-reminder/CreateReminderCommand";
 import { CreateReminderCommandResult } from "../../application/commands/create-reminder/CreateReminderHandler";
 import { v4 } from "uuid";
 
 export class ReminderController implements IReminderController {
-  constructor(private readonly commandBus: ICommandBus) {}
+	constructor(private readonly commandBus: ICommandBus) {}
 
-  async postCreateReminder(
-    req: HttpRequest<INewReminderPropsDto>,
-    res: HttpResponse<IActiveReminderPropsDto | ZodError>
-  ): Promise<void> {
-    const bodyResult = newReminderPropsSchema.safeParse(req.body);
+	async postCreateReminder(
+		req: HttpRequest<INewReminderPropsDto>,
+		res: HttpResponse<IActiveReminderPropsDto | ZodError>
+	): Promise<void> {
+		const bodyResult = newReminderPropsSchema.safeParse(req.body);
 
-    if (!bodyResult.success) {
-      res.status(400).send(bodyResult.error);
-      return;
-    }
+		if (!bodyResult.success) {
+			res.status(400).send(bodyResult.error);
+			return;
+		}
 
-    const result = await this.commandBus.execute<
-      ICreateReminderCommand,
-      CreateReminderCommandResult
-    >(new CreateReminderCommand({ ...bodyResult.data, traceId: v4() }));
+		const result = await this.commandBus.execute<
+			ICreateReminderCommand,
+			CreateReminderCommandResult
+		>(new CreateReminderCommand({ ...bodyResult.data, traceId: v4() }));
 
-    if (result.isFailure()) {
-      const error = result.getError();
-    }
+		if (result.isFailure()) {
+			const error = result.getError();
+		}
 
-    res.status(201).send();
-  }
+		res.status(201).send();
+	}
 }

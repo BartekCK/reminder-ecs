@@ -1,88 +1,96 @@
 import { v4 } from "uuid";
 import { IReminder, ReminderId, ReminderProps } from "./reminder.interface";
 import {
-  ReminderCreateFailure,
-  ReminderCreateResult,
-  ReminderCreateSuccess,
+	ReminderCreateFailure,
+	ReminderCreateResult,
+	ReminderCreateSuccess,
 } from "./behaviours/createResult";
 import { AggregateRoot } from "../../common/domain";
 import { CreateReminderDomainEvent } from "./events/createReminder/CreateReminderDomainEvent";
 
 export class Reminder extends AggregateRoot implements IReminder {
-  private constructor(private readonly props: ReminderProps) {
-    super();
-  }
+	private constructor(private readonly props: ReminderProps) {
+		super();
+	}
 
-  public static create(
-    data: {
-      note: string;
-      plannedExecutionDate?: Date;
-      userId: string;
-    },
-    context: { traceId: string; commandName: string }
-  ): ReminderCreateResult {
-    const { note, userId, plannedExecutionDate } = data;
+	public static create(
+		data: {
+			note: string;
+			plannedExecutionDate?: Date;
+			userId: string;
+		},
+		context: { traceId: string; commandName: string }
+	): ReminderCreateResult {
+		const { note, userId, plannedExecutionDate } = data;
 
-    const currentTime = Date.now();
+		const currentTime = Date.now();
 
-    if (plannedExecutionDate && plannedExecutionDate.getTime() <= currentTime) {
-      return ReminderCreateFailure.pastExecution(
-        userId,
-        plannedExecutionDate,
-        new Date(currentTime)
-      );
-    }
+		if (plannedExecutionDate && plannedExecutionDate.getTime() <= currentTime) {
+			return ReminderCreateFailure.pastExecution(
+				userId,
+				plannedExecutionDate,
+				new Date(currentTime)
+			);
+		}
 
-    if (!note.length) {
-      return ReminderCreateFailure.noteIsEmpty(userId);
-    }
+		if (!note.length) {
+			return ReminderCreateFailure.noteIsEmpty(userId);
+		}
 
-    const reminder = new Reminder({
-      id: v4() as ReminderId,
-      userId,
-      note,
-      plannedExecutionDate,
-      executedAt: null,
-    });
+		const reminder = new Reminder({
+			id: v4() as ReminderId,
+			userId,
+			note,
+			plannedExecutionDate,
+			executedAt: null,
+		});
 
-    const event = CreateReminderDomainEvent.create(
-      {
-        note,
-        userId,
-        plannedExecutionDate,
-      },
-      {
-        entityId: reminder.getId(),
-        sequence: 0,
-        traceId: context.traceId,
-        commandName: context.commandName,
-      }
-    );
+		const event = CreateReminderDomainEvent.create(
+			{
+				note,
+				userId,
+				plannedExecutionDate,
+			},
+			{
+				entityId: reminder.getId(),
+				sequence: 0,
+				traceId: context.traceId,
+				commandName: context.commandName,
+			}
+		);
 
-    if (event.isFailure()) {
-      return event;
-    }
+		if (event.isFailure()) {
+			return event;
+		}
 
-    reminder.addDomainEvent(event.getData());
+		reminder.addDomainEvent(event.getData());
 
-    return ReminderCreateSuccess.create({
-      reminder,
-    });
-  }
+		return ReminderCreateSuccess.create({
+			reminder,
+		});
+	}
 
-  delete(): any {}
+	delete(): any {
+		throw new Error("Not implemented yet");
+	}
 
-  markAsResolved(): any {}
+	markAsResolved(): any {
+		throw new Error("Not implemented yet");
+	}
 
-  updateExecutionDate(): any {}
+	updateExecutionDate(): any {
+		throw new Error("Not implemented yet");
+	}
 
-  updateNote(): any {}
+	updateNote(): any {
+		throw new Error("Not implemented yet");
+	}
 
-  getProps(): ReminderProps {
-    return this.props;
-  }
+	getProps(): ReminderProps {
+		return this.props;
+	}
 
-  getId(): ReminderId {
-    return this.props.id;
-  }
+	getId(): ReminderId {
+		return this.props.id;
+	}
 }

@@ -3,47 +3,46 @@ import { IReminderRepository } from "../../repositories";
 import { Reminder } from "../../../domain";
 import { ICommand, ICommandHandler } from "../../../../common/command-bus";
 import {
-  CreateReminderCommand,
-  createReminderCommandPayloadSchema,
-  ICreateReminderCommand,
+	CreateReminderCommand,
+	createReminderCommandPayloadSchema,
+	ICreateReminderCommand,
 } from "./CreateReminderCommand";
 
 export class CreateReminderCommandSuccess extends OutcomeSuccess<null> {}
 
 export type CreateReminderCommandResult =
-  | CreateReminderCommandSuccess
-  | ApplicationFailure;
+	| CreateReminderCommandSuccess
+	| ApplicationFailure;
 
 export class CreateReminderHandler
-  implements
-    ICommandHandler<ICreateReminderCommand, Promise<CreateReminderCommandResult>>
-{
-  constructor(private readonly reminderRepository: IReminderRepository) {}
+	implements
+		ICommandHandler<ICreateReminderCommand, Promise<CreateReminderCommandResult>> {
+	constructor(private readonly reminderRepository: IReminderRepository) {}
 
-  async handle(command: ICommand): Promise<CreateReminderCommandResult> {
-    const validationResult = createReminderCommandPayloadSchema.safeParse(command);
+	async handle(command: ICommand): Promise<CreateReminderCommandResult> {
+		const validationResult = createReminderCommandPayloadSchema.safeParse(command);
 
-    if (!validationResult.success) {
-      return ApplicationFailure.invalidPayload(validationResult.error);
-    }
+		if (!validationResult.success) {
+			return ApplicationFailure.invalidPayload(validationResult.error);
+		}
 
-    const createReminderResult = Reminder.create(validationResult.data, {
-      traceId: command.traceId,
-      commandName: CreateReminderCommand.name,
-    });
+		const createReminderResult = Reminder.create(validationResult.data, {
+			traceId: command.traceId,
+			commandName: CreateReminderCommand.name,
+		});
 
-    if (createReminderResult.isFailure()) {
-      return ApplicationFailure.domainError(createReminderResult);
-    }
+		if (createReminderResult.isFailure()) {
+			return ApplicationFailure.domainError(createReminderResult);
+		}
 
-    const { reminder } = createReminderResult.getData();
+		const { reminder } = createReminderResult.getData();
 
-    const saveResult = await this.reminderRepository.save(reminder);
+		const saveResult = await this.reminderRepository.save(reminder);
 
-    if (saveResult.isFailure()) {
-      return ApplicationFailure.infrastructureError(saveResult);
-    }
+		if (saveResult.isFailure()) {
+			return ApplicationFailure.infrastructureError(saveResult);
+		}
 
-    return CreateReminderCommandSuccess.create(null);
-  }
+		return CreateReminderCommandSuccess.create(null);
+	}
 }

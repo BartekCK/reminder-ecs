@@ -1,0 +1,56 @@
+name: test-backend
+
+on:
+  pull_request:
+    branches: [ "develop", "master" ]
+
+jobs:
+  test:
+    services:
+    
+      localstack:
+        image: localstack/localstack
+        ports:
+          - "127.0.0.1:4566:4566"
+          - "127.0.0.1:4510-4559:4510-4559" 
+        env:
+          AWS_DEFAULT_REGION: eu-central-1
+          SERVICES: dynamodb
+          DOCKER_HOST: unix:///var/run/docker.sock
+          
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: AlaHasCat
+      AWS_SECRET_ACCESS_KEY: AlaHasCat
+      AWS_DEFAULT_REGION: eu-central-1
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: ./backend
+        
+    - name: Install all app dependencies
+      working-directory: ./backend
+      run: npm ci
+
+    - name: Check typescript types
+      working-directory: ./backend
+      run: npm run check-types
+
+    - name: Check lint
+      working-directory: ./backend
+      run: npm run lint
+
+    - name: Run test
+      working-directory: ./backend
+      run: npm test

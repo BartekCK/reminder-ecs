@@ -1,9 +1,9 @@
 import { ReminderRepository } from "../../reminder/infrastructure/repositories/ReminderRepository";
 import {
-  CommandBus,
-  ICommand,
-  ICommandBus,
-  ICommandHandler,
+	CommandBus,
+	ICommand,
+	ICommandBus,
+	ICommandHandler,
 } from "../../common/command-bus";
 import { Result } from "../../common/error-handling";
 import { CreateReminderCommand } from "../../reminder/application/commands/create-reminder/CreateReminderCommand";
@@ -18,74 +18,73 @@ import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { EventDBMapper } from "../database";
 
 export interface IDependencies {
-  reminderRepository: IReminderRepository;
-  commandBus: ICommandBus;
-  reminderRouter: ReminderRouter;
-  environmentLocalStore: EnvironmentLocalStore;
+	reminderRepository: IReminderRepository;
+	commandBus: ICommandBus;
+	reminderRouter: ReminderRouter;
+	environmentLocalStore: EnvironmentLocalStore;
 }
 
-interface IDependencyInjector {}
-
 export class DependencyInjector {
-  private static singleton: DependencyInjector | null;
-  private readonly props: IDependencies;
+	private static singleton: DependencyInjector | null;
+	private readonly props: IDependencies;
 
-  private constructor(props: {
-    reminderRouter: ReminderRouter;
-    commandBus: ICommandBus;
-    reminderRepository: IReminderRepository;
-    environmentLocalStore: EnvironmentLocalStore;
-  }) {
-    this.props = props;
-    DependencyInjector.singleton = this;
-  }
+	private constructor(props: {
+		reminderRouter: ReminderRouter;
+		commandBus: ICommandBus;
+		reminderRepository: IReminderRepository;
+		environmentLocalStore: EnvironmentLocalStore;
+	}) {
+		this.props = props;
+		DependencyInjector.singleton = this;
+	}
 
-  public static async create(data?: IDependencyInjector): Promise<DependencyInjector> {
-    if (DependencyInjector.singleton) {
-      return DependencyInjector.singleton;
-    }
+	public static async create(): Promise<DependencyInjector> {
+		if (DependencyInjector.singleton) {
+			return DependencyInjector.singleton;
+		}
 
-    const environmentLocalStore = await EnvironmentLocalStore.create(
-      process.env.NODE_ENV === "production" ? new SsmEnvironment() : new OsEnvironment()
-    );
+		const environmentLocalStore = await EnvironmentLocalStore.create(
+			process.env.NODE_ENV === "production" ? new SsmEnvironment() : new OsEnvironment()
+		);
 
-    const eventDatabaseMapper = new EventDBMapper();
+		const eventDatabaseMapper = new EventDBMapper();
 
-    const databaseClient: DynamoDBClient = new DynamoDBClient({
-      region: environmentLocalStore.getAwsRegion(),
-      endpoint: environmentLocalStore.getDynamoDbUrl(),
-    });
+		const databaseClient: DynamoDBClient = new DynamoDBClient({
+			region: environmentLocalStore.getAwsRegion(),
+			endpoint: environmentLocalStore.getDynamoDbUrl(),
+		});
 
-    const reminderRepository = new ReminderRepository(
-      databaseClient,
-      eventDatabaseMapper
-    );
+		const reminderRepository = new ReminderRepository(
+			databaseClient,
+			eventDatabaseMapper,
+			environmentLocalStore.getEventsTableName()
+		);
 
-    const createReminderHandler = new CreateReminderHandler(reminderRepository);
+		const createReminderHandler = new CreateReminderHandler(reminderRepository);
 
-    const commandMap: Map<string, ICommandHandler<ICommand, Promise<Result>>> = new Map([
-      [CreateReminderCommand.name, createReminderHandler],
-    ]);
+		const commandMap: Map<string, ICommandHandler<ICommand, Promise<Result>>> = new Map([
+			[CreateReminderCommand.name, createReminderHandler],
+		]);
 
-    const commandBus: ICommandBus = new CommandBus(commandMap);
+		const commandBus: ICommandBus = new CommandBus(commandMap);
 
-    const reminderController = new ReminderController(commandBus);
+		const reminderController = new ReminderController(commandBus);
 
-    const reminderRouter = new ReminderRouter(reminderController);
+		const reminderRouter = new ReminderRouter(reminderController);
 
-    return new DependencyInjector({
-      commandBus,
-      reminderRepository,
-      reminderRouter,
-      environmentLocalStore,
-    });
-  }
+		return new DependencyInjector({
+			commandBus,
+			reminderRepository,
+			reminderRouter,
+			environmentLocalStore,
+		});
+	}
 
-  public static getDependencies(): IDependencies {
-    if (!DependencyInjector.singleton) {
-      throw new Error("Static method 'create' wasn't invoke");
-    }
+	public static getDependencies(): IDependencies {
+		if (!DependencyInjector.singleton) {
+			throw new Error("Static method 'create' wasn't invoke");
+		}
 
-    return DependencyInjector.singleton.props;
-  }
+		return DependencyInjector.singleton.props;
+	}
 }
