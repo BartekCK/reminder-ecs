@@ -1,4 +1,4 @@
-name: test
+name: test-backend
 
 on:
   push:
@@ -31,13 +31,16 @@ jobs:
       uses: actions/checkout@v3
       
     - name: Use Node.js ${{ matrix.node-version }}
+      working-directory: ./backend
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
         
     - name: Instal all app dependencies
+      working-directory: ./backend
       run: npm ci
       
     - name: Run test
+      working-directory: ./backend
       run: npm test
