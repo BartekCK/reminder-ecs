@@ -1,7 +1,8 @@
 import { EnvironmentLocalStoreFactory } from "./environmentLocalStoreFactory.interface";
 import { EnvModel } from "../EnviromentModel";
+import { IEnvironmentDatabase } from "../../database";
 
-export class EnvironmentLocalStore {
+export class EnvironmentLocalStore implements IEnvironmentDatabase {
 	private env: EnvModel;
 
 	private constructor(env: EnvModel) {
@@ -22,8 +23,8 @@ export class EnvironmentLocalStore {
 		return this.env.getProps().awsRegion;
 	}
 
-	getDynamoDbUrl(): string | undefined {
-		return this.env.getProps().dynamoDBUrl;
+	getDynamoDbUrl(): string | null {
+		return this.env.getProps().dynamoDBUrl || null;
 	}
 
 	getPort(): number {
@@ -32,5 +33,9 @@ export class EnvironmentLocalStore {
 
 	getEventsTableName(): string {
 		return this.env.getProps().eventsTableName;
+	}
+
+	getEnvStage(): "test" | "production" | "development" {
+		return this.env.getProps().environment;
 	}
 }

@@ -16,6 +16,7 @@ import { ReminderController } from "../../reminder/presentation/controllers/Remi
 import { ReminderRouter } from "../../reminder/presentation/reminderRouter";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { EventDBMapper } from "../database";
+import { DatabaseClient, IDatabaseClient } from "../../common/database";
 
 export interface IDependencies {
 	reminderRepository: IReminderRepository;
@@ -47,12 +48,11 @@ export class DependencyInjector {
 			process.env.NODE_ENV === "production" ? new SsmEnvironment() : new OsEnvironment()
 		);
 
-		const eventDatabaseMapper = new EventDBMapper();
-
-		const databaseClient: DynamoDBClient = new DynamoDBClient({
-			region: environmentLocalStore.getAwsRegion(),
-			endpoint: environmentLocalStore.getDynamoDbUrl(),
+		const databaseClient: IDatabaseClient = new DatabaseClient({
+			env: environmentLocalStore,
 		});
+
+		const eventDatabaseMapper = new EventDBMapper();
 
 		const reminderRepository = new ReminderRepository(
 			databaseClient,
@@ -60,7 +60,7 @@ export class DependencyInjector {
 			environmentLocalStore.getEventsTableName()
 		);
 
-		const createReminderHandler = new CreateReminderHandler(reminderRepository);
+		const createReminderHandler = new CreateReminderHandler({ reminderRepository });
 
 		const commandMap: Map<string, ICommandHandler<ICommand, Promise<Result>>> = new Map([
 			[CreateReminderCommand.name, createReminderHandler],

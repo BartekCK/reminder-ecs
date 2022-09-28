@@ -14,10 +14,19 @@ export type CreateReminderCommandResult =
 	| CreateReminderCommandSuccess
 	| ApplicationFailure;
 
+type Dependencies = {
+	reminderRepository: IReminderRepository;
+};
+
 export class CreateReminderHandler
 	implements
-		ICommandHandler<ICreateReminderCommand, Promise<CreateReminderCommandResult>> {
-	constructor(private readonly reminderRepository: IReminderRepository) {}
+		ICommandHandler<ICreateReminderCommand, Promise<CreateReminderCommandResult>>
+{
+	private readonly reminderRepository: IReminderRepository;
+
+	constructor(dependencies: Dependencies) {
+		this.reminderRepository = dependencies.reminderRepository;
+	}
 
 	async handle(command: ICommand): Promise<CreateReminderCommandResult> {
 		const validationResult = createReminderCommandPayloadSchema.safeParse(command);
