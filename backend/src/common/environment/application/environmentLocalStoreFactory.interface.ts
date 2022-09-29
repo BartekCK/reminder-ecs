@@ -21,7 +21,7 @@ export abstract class EnvironmentLocalStoreFactory {
 			awsRegion: dirtyEnvs.AWS_REGION,
 			dynamoDBUrl: dirtyEnvs.DYNAMO_DB_URL,
 			appPort: dirtyEnvs.APP_PORT,
-			environment: dirtyEnvs.NODE_ENV,
+			environment: dirtyEnvs.NODE_ENV as "test" | "production" | "development",
 			eventsTableName: dirtyEnvs.EVENTS_TABLE_NAME,
 		};
 	};

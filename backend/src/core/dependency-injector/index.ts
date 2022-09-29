@@ -14,7 +14,6 @@ import { SsmEnvironment } from "../../common/environment/infrastructure/SsmEnvir
 import { OsEnvironment } from "../../common/environment/infrastructure/OsEnviroment";
 import { ReminderController } from "../../reminder/presentation/controllers/ReminderController";
 import { ReminderRouter } from "../../reminder/presentation/reminderRouter";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { EventDBMapper } from "../database";
 import { DatabaseClient, IDatabaseClient } from "../../common/database";
 
@@ -23,18 +22,14 @@ export interface IDependencies {
 	commandBus: ICommandBus;
 	reminderRouter: ReminderRouter;
 	environmentLocalStore: EnvironmentLocalStore;
+	databaseClient: IDatabaseClient;
 }
 
 export class DependencyInjector {
 	private static singleton: DependencyInjector | null;
 	private readonly props: IDependencies;
 
-	private constructor(props: {
-		reminderRouter: ReminderRouter;
-		commandBus: ICommandBus;
-		reminderRepository: IReminderRepository;
-		environmentLocalStore: EnvironmentLocalStore;
-	}) {
+	private constructor(props: IDependencies) {
 		this.props = props;
 		DependencyInjector.singleton = this;
 	}
@@ -77,6 +72,7 @@ export class DependencyInjector {
 			reminderRepository,
 			reminderRouter,
 			environmentLocalStore,
+			databaseClient,
 		});
 	}
 

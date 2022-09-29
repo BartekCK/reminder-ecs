@@ -1,4 +1,3 @@
-import { BatchWriteItemCommand } from "@aws-sdk/client-dynamodb";
 import {
 	IReminderRepository,
 	SaveReminderResult,
@@ -16,25 +15,17 @@ export class ReminderRepository implements IReminderRepository {
 	) {}
 
 	async save(reminder: IReminder): Promise<SaveReminderResult> {
-		// const events = reminder.getChanges();
-		//
-		// const putRequests: WriteRequest[] = events.map((event) => ({
-		// 	PutRequest: {
-		// 		Item: this.mapper.mapDomainEventPayloadIntoEventItem(event.getProps()),
-		// 	},
-		// }));
+		const events = reminder.getChanges();
+
+		const putRequests: WriteRequest[] = events.map((event) => ({
+			PutRequest: {
+				Item: this.mapper.mapDomainEventPayloadIntoEventItem(event.getProps()),
+			},
+		}));
 
 		await this.client.batchWrite({
-			RequestItems: { [this.dbName]: [{ PutRequest: { Item: { aaa: "dd" } } }] },
+			RequestItems: { [this.dbName]: putRequests },
 		});
-
-		// await this.client.send(
-		// 	new BatchWriteItemCommand({
-		// 		RequestItems: {
-		// 			[this.dbName]: putRequests,
-		// 		},
-		// 	})
-		// );
 
 		return SaveReminderSuccess.create({ reminderId: reminder.getId() });
 	}
