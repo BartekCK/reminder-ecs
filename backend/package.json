@@ -8,9 +8,9 @@
     "build": "rimraf dist && tsc",
     "lint": "eslint \"src/**/*.ts\" --fix --quiet",
     "check-types": "tsc --noEmit",
-    "pretest": "chmod u+x ./scripts/localDynamoDBBootstrap.sh && TABLE_NAME=test_events_table ./scripts/localDynamoDBBootstrap.sh",
+    "temp+pretest": "chmod u+x ./scripts/localDynamoDBBootstrap.sh && TABLE_NAME=test_events_table ./scripts/localDynamoDBBootstrap.sh",
     "test": "jest --runInBand --verbose",
-    "posttest": "chmod u+x ./scripts/localDynamoDBClear.sh && TABLE_NAME=test_events_table ./scripts/localDynamoDBClear.sh"
+    "temp+posttest": "chmod u+x ./scripts/localDynamoDBClear.sh && TABLE_NAME=test_events_table ./scripts/localDynamoDBClear.sh"
   },
   "author": "",
   "license": "ISC",
