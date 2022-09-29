@@ -14,26 +14,22 @@ import { SsmEnvironment } from "../../common/environment/infrastructure/SsmEnvir
 import { OsEnvironment } from "../../common/environment/infrastructure/OsEnviroment";
 import { ReminderController } from "../../reminder/presentation/controllers/ReminderController";
 import { ReminderRouter } from "../../reminder/presentation/reminderRouter";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { EventDBMapper } from "../database";
+import { DatabaseClient, IDatabaseClient } from "../../common/database";
 
 export interface IDependencies {
 	reminderRepository: IReminderRepository;
 	commandBus: ICommandBus;
 	reminderRouter: ReminderRouter;
 	environmentLocalStore: EnvironmentLocalStore;
+	databaseClient: IDatabaseClient;
 }
 
 export class DependencyInjector {
 	private static singleton: DependencyInjector | null;
 	private readonly props: IDependencies;
 
-	private constructor(props: {
-		reminderRouter: ReminderRouter;
-		commandBus: ICommandBus;
-		reminderRepository: IReminderRepository;
-		environmentLocalStore: EnvironmentLocalStore;
-	}) {
+	private constructor(props: IDependencies) {
 		this.props = props;
 		DependencyInjector.singleton = this;
 	}
@@ -47,12 +43,11 @@ export class DependencyInjector {
 			process.env.NODE_ENV === "production" ? new SsmEnvironment() : new OsEnvironment()
 		);
 
-		const eventDatabaseMapper = new EventDBMapper();
-
-		const databaseClient: DynamoDBClient = new DynamoDBClient({
-			region: environmentLocalStore.getAwsRegion(),
-			endpoint: environmentLocalStore.getDynamoDbUrl(),
+		const databaseClient: IDatabaseClient = new DatabaseClient({
+			env: environmentLocalStore,
 		});
+
+		const eventDatabaseMapper = new EventDBMapper();
 
 		const reminderRepository = new ReminderRepository(
 			databaseClient,
@@ -60,7 +55,7 @@ export class DependencyInjector {
 			environmentLocalStore.getEventsTableName()
 		);
 
-		const createReminderHandler = new CreateReminderHandler(reminderRepository);
+		const createReminderHandler = new CreateReminderHandler({ reminderRepository });
 
 		const commandMap: Map<string, ICommandHandler<ICommand, Promise<Result>>> = new Map([
 			[CreateReminderCommand.name, createReminderHandler],
@@ -77,6 +72,7 @@ export class DependencyInjector {
 			reminderRepository,
 			reminderRouter,
 			environmentLocalStore,
+			databaseClient,
 		});
 	}
 

@@ -3,7 +3,7 @@ import { z } from "zod";
 const envModelSchema = z.object({
 	awsRegion: z.string(),
 	appPort: z.string(),
-	environment: z.string(),
+	environment: z.enum(["test", "development", "production"]),
 	dynamoDBUrl: z.string().optional(),
 	eventsTableName: z.string(),
 });

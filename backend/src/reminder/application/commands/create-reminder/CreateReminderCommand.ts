@@ -5,7 +5,8 @@ import { ICommand } from "../../../../common/command-bus";
 export const createReminderCommandPayloadSchema = z.object({
 	note: z.string(),
 	plannedExecutionDate: isoDateSchema,
-	userId: z.string(),
+	userId: z.string().uuid(),
+	traceId: z.string().uuid(),
 });
 
 export type ICreateReminderCommand = z.infer<typeof createReminderCommandPayloadSchema> &

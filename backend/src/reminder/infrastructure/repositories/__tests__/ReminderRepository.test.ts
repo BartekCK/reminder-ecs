@@ -3,29 +3,33 @@ import {
 	IReminderRepository,
 	SaveReminderSuccess,
 } from "../../../application/repositories";
-import { DynamoDBClient, QueryCommand } from "@aws-sdk/client-dynamodb";
 import { EventDBMapper } from "../../../../core/database";
 import { EnvironmentLocalStore } from "../../../../common/environment/application/EnviromentLocalStore";
 import { OsEnvironment } from "../../../../common/environment/infrastructure/OsEnviroment";
 import { ReminderMock } from "../../../../__tests__/mocks";
+import { DatabaseClient, IDatabaseClient } from "../../../../common/database";
 
 describe("ReminderRepository", () => {
 	let reminderRepository: IReminderRepository;
-	let dbClient: DynamoDBClient;
+	let dbClient: IDatabaseClient;
 	let environmentLocalStore: EnvironmentLocalStore;
 
 	beforeAll(async () => {
 		environmentLocalStore = await EnvironmentLocalStore.create(new OsEnvironment());
+		const tableName = environmentLocalStore.getEventsTableName();
 
-		dbClient = new DynamoDBClient({
-			region: environmentLocalStore.getAwsRegion(),
-			endpoint: environmentLocalStore.getDynamoDbUrl(),
-		});
+		dbClient = new DatabaseClient({ env: environmentLocalStore });
+		await dbClient.createEventTable(tableName);
 
 		const mapper = new EventDBMapper();
 
-		const tableName = environmentLocalStore.getEventsTableName();
 		reminderRepository = new ReminderRepository(dbClient, mapper, tableName);
+	});
+
+	afterAll(async () => {
+		const tableName = environmentLocalStore.getEventsTableName();
+		await dbClient.deleteEventTable(tableName);
+		dbClient.destroy();
 	});
 
 	describe("Given reminder domain", () => {
@@ -49,15 +53,13 @@ describe("ReminderRepository", () => {
 			});
 
 			it("then should save all events", async () => {
-				const sendResult = await dbClient.send(
-					new QueryCommand({
-						TableName: environmentLocalStore.getEventsTableName(),
-						ExpressionAttributeValues: {
-							":entityId": { S: reminder.getId() },
-						},
-						KeyConditionExpression: "entityId = :entityId",
-					})
-				);
+				const sendResult = await dbClient.query({
+					TableName: environmentLocalStore.getEventsTableName(),
+					ExpressionAttributeValues: {
+						":entityId": reminder.getId(),
+					},
+					KeyConditionExpression: "entityId = :entityId",
+				});
 
 				expect(sendResult.Items).toBeDefined();
 				expect(sendResult.Items).toHaveLength(1);

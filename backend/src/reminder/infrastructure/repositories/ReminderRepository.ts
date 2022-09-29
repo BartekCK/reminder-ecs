@@ -1,4 +1,3 @@
-import { BatchWriteItemCommand, DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import {
 	IReminderRepository,
 	SaveReminderResult,
@@ -6,11 +5,11 @@ import {
 } from "../../application/repositories";
 import { IReminder } from "../../domain";
 import { WriteRequest } from "@aws-sdk/client-dynamodb/dist-types/models/models_0";
-import { IEventDBMapper } from "../../../common/database";
+import { IDatabaseClient, IEventDBMapper } from "../../../common/database";
 
 export class ReminderRepository implements IReminderRepository {
 	constructor(
-		private readonly client: DynamoDBClient,
+		private readonly client: IDatabaseClient,
 		private readonly mapper: IEventDBMapper,
 		private readonly dbName: string
 	) {}
@@ -24,13 +23,9 @@ export class ReminderRepository implements IReminderRepository {
 			},
 		}));
 
-		await this.client.send(
-			new BatchWriteItemCommand({
-				RequestItems: {
-					[this.dbName]: putRequests,
-				},
-			})
-		);
+		await this.client.batchWrite({
+			RequestItems: { [this.dbName]: putRequests },
+		});
 
 		return SaveReminderSuccess.create({ reminderId: reminder.getId() });
 	}

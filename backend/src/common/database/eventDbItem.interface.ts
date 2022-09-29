@@ -1,17 +1,15 @@
-import { AttributeValue } from "@aws-sdk/client-dynamodb/dist-types/models/models_0";
+import { NativeAttributeValue } from "@aws-sdk/util-dynamodb/dist-types/models";
 
-export interface IEventDBItem extends Record<string, AttributeValue> {
-	id: { S: string };
-	name: { S: string };
-	version: { N: string };
-	entityId: { S: string };
-	sequence: { N: string };
+export interface IEventDBItem extends Record<string, NativeAttributeValue> {
+	id: string;
+	name: string;
+	version: number;
+	entityId: string;
+	sequence: number;
 	metadata: {
-		M: {
-			traceId: { S: string };
-			commandName: { S: string };
-			generatedAt: { S: string };
-		};
+		traceId: string;
+		commandName: string;
+		generatedAt: string;
 	};
-	data: { S: string };
+	data: string;
 }

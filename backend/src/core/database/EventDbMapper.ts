@@ -6,19 +6,17 @@ export class EventDBMapper implements IEventDBMapper {
 		eventPayload: IDomainEventPayload
 	): IEventDBItem {
 		return {
-			id: { S: eventPayload.id },
-			name: { S: eventPayload.name.toString() },
-			version: { N: eventPayload.version.toString() },
-			entityId: { S: eventPayload.entityId },
-			sequence: { N: eventPayload.sequence.toString() },
+			id: eventPayload.id,
+			name: eventPayload.name.toString(),
+			version: eventPayload.version,
+			entityId: eventPayload.entityId,
+			sequence: eventPayload.sequence,
 			metadata: {
-				M: {
-					traceId: { S: eventPayload.metadata.traceId },
-					commandName: { S: eventPayload.metadata.commandName },
-					generatedAt: { S: eventPayload.metadata.generatedAt.toISOString() },
-				},
+				traceId: eventPayload.metadata.traceId,
+				commandName: eventPayload.metadata.commandName,
+				generatedAt: eventPayload.metadata.generatedAt.toISOString(),
 			},
-			data: { S: JSON.stringify(eventPayload.data) },
+			data: JSON.stringify(eventPayload.data),
 		};
 	}
 }

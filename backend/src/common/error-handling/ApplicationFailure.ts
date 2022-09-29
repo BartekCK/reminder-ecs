@@ -19,7 +19,7 @@ export class ApplicationFailure extends OutcomeFailure<IContext | ZodError> {
 	}
 
 	public static invalidPayload(zodError: ZodError) {
-		return new ApplicationFailure(zodError);
+		return new ApplicationFailure(zodError, "INCORRECT_COMMAND_PAYLOAD");
 	}
 
 	public static domainError(failure: OutcomeFailure) {

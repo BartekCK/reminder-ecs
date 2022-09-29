@@ -56,3 +56,10 @@ jobs:
     - name: Run test
       working-directory: ./backend
       run: npm test
+
+    - name: Upload coverage reports
+      working-directory: ./backend
+      run: |
+        curl -Os https://uploader.codecov.io/latest/linux/codecov
+        chmod +x codecov
+        ./codecov
