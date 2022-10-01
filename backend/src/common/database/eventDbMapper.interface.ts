@@ -3,4 +3,5 @@ import { IEventDBItem } from "./eventDbItem.interface";
 
 export interface IEventDBMapper {
 	mapDomainEventPayloadIntoEventItem: (eventPayload: IDomainEventPayload) => IEventDBItem;
+	mapEventItemIntoDomainEventPayload: (dbItem: IEventDBItem) => IDomainEventPayload;
 }

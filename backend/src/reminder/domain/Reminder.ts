@@ -7,10 +7,27 @@ import {
 } from "./behaviours/createResult";
 import { AggregateRoot } from "../../common/domain";
 import { CreateReminderDomainEvent } from "./events/createReminder/CreateReminderDomainEvent";
+import { OutcomeSuccess } from "../../common/error-handling";
+
+export class ReminderApplySuccess extends OutcomeSuccess<{ reminder: IReminder }> {}
+
+type ReminderApplyResult = ReminderApplySuccess;
 
 export class Reminder extends AggregateRoot implements IReminder {
 	private constructor(private readonly props: ReminderProps) {
 		super();
+	}
+
+	public static apply(): ReminderApplyResult {
+		//TODO: Create apply method and add domain events as arg
+		const state: ReminderProps = {
+			note: "",
+			executedAt: null,
+			userId: "",
+			id: "",
+		};
+
+		return ReminderApplySuccess.create({ reminder: new Reminder(state) });
 	}
 
 	public static create(

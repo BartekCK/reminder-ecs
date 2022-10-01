@@ -19,4 +19,20 @@ export class EventDBMapper implements IEventDBMapper {
 			data: JSON.stringify(eventPayload.data),
 		};
 	}
+
+	mapEventItemIntoDomainEventPayload(dbItem: IEventDBItem): IDomainEventPayload {
+		return {
+			id: dbItem.id,
+			name: dbItem.name,
+			version: dbItem.version,
+			entityId: dbItem.entityId,
+			sequence: dbItem.sequence,
+			metadata: {
+				traceId: dbItem.metadata.traceId,
+				commandName: dbItem.metadata.commandName,
+				generatedAt: new Date(dbItem.metadata.generatedAt),
+			},
+			data: JSON.parse(dbItem.data),
+		};
+	}
 }

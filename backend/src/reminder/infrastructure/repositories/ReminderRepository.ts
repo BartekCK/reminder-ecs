@@ -1,9 +1,11 @@
 import {
+	GetByIdResult,
+	GetByIdSuccess,
 	IReminderRepository,
 	SaveReminderResult,
 	SaveReminderSuccess,
 } from "../../application/repositories";
-import { IReminder } from "../../domain";
+import { IReminder, Reminder } from "../../domain";
 import { WriteRequest } from "@aws-sdk/client-dynamodb/dist-types/models/models_0";
 import { IDatabaseClient, IEventDBMapper } from "../../../common/database";
 
@@ -28,5 +30,18 @@ export class ReminderRepository implements IReminderRepository {
 		});
 
 		return SaveReminderSuccess.create({ reminderId: reminder.getId() });
+	}
+
+	async getById(id: string): Promise<GetByIdResult> {
+		const applyResult = Reminder.apply();
+
+		if (applyResult.isFailure()) {
+			//TODO: Implement results for apply method
+			throw new Error("Not implemented yet");
+		}
+
+		const { reminder } = applyResult.getData();
+
+		return GetByIdSuccess.create({ reminder });
 	}
 }
