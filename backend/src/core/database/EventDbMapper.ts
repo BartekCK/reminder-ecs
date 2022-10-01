@@ -1,10 +1,10 @@
-import { IDomainEventPayload } from "../../common/events";
+import { DomainEvent } from "../../common/events";
 import { IEventDBMapper, IEventDBItem } from "../../common/database";
 
 export class EventDBMapper implements IEventDBMapper {
-	public mapDomainEventPayloadIntoEventItem(
-		eventPayload: IDomainEventPayload
-	): IEventDBItem {
+	mapDomainEventIntoEventItem(domainEvent: DomainEvent): IEventDBItem {
+		const eventPayload = domainEvent.getPayload();
+
 		return {
 			id: eventPayload.id,
 			name: eventPayload.name.toString(),
@@ -20,8 +20,8 @@ export class EventDBMapper implements IEventDBMapper {
 		};
 	}
 
-	mapEventItemIntoDomainEventPayload(dbItem: IEventDBItem): IDomainEventPayload {
-		return {
+	mapEventItemIntoDomainEvent(dbItem: IEventDBItem): DomainEvent {
+		const payload = {
 			id: dbItem.id,
 			name: dbItem.name,
 			version: dbItem.version,
@@ -34,5 +34,7 @@ export class EventDBMapper implements IEventDBMapper {
 			},
 			data: JSON.parse(dbItem.data),
 		};
+
+		return new DomainEvent(payload);
 	}
 }

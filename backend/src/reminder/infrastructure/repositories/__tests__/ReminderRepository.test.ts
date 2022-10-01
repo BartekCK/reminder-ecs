@@ -1,5 +1,7 @@
 import { ReminderRepository } from "../ReminderRepository";
 import {
+	GetByIdResult,
+	GetByIdSuccess,
 	IReminderRepository,
 	SaveReminderSuccess,
 } from "../../../application/repositories";
@@ -8,6 +10,9 @@ import { EnvironmentLocalStore } from "../../../../common/environment/applicatio
 import { OsEnvironment } from "../../../../common/environment/infrastructure/OsEnviroment";
 import { ReminderMock } from "../../../../__tests__/mocks";
 import { DatabaseClient, IDatabaseClient } from "../../../../common/database";
+import { assertSuccess } from "../../../../common/tests";
+import { IReminderEventPayload } from "../../../domain/events";
+import { v4 } from "uuid";
 
 describe("ReminderRepository", () => {
 	let reminderRepository: IReminderRepository;
@@ -41,9 +46,7 @@ describe("ReminderRepository", () => {
 			beforeAll(async () => {
 				const result = await reminderRepository.save(reminder);
 
-				if (result.isFailure()) {
-					throw new Error("Should return SUCCESS");
-				}
+				assertSuccess(result);
 
 				saveResult = result;
 			});
@@ -63,6 +66,43 @@ describe("ReminderRepository", () => {
 
 				expect(sendResult.Items).toBeDefined();
 				expect(sendResult.Items).toHaveLength(1);
+			});
+		});
+	});
+
+	describe("Given saved reminder events stream", () => {
+		const reminder = ReminderMock.create();
+
+		beforeAll(async () => {
+			await reminderRepository.save(reminder);
+		});
+
+		describe("when reminder stream was found by entityId", () => {
+			let saveResult: GetByIdSuccess;
+
+			beforeAll(async () => {
+				const result = await reminderRepository.getById(reminder.getId());
+				assertSuccess(result);
+				saveResult = result;
+			});
+
+			it("then result should be Reminder", async () => {
+				expect(saveResult.getData().reminder?.getProps()).toEqual(reminder.getProps());
+			});
+		});
+
+		describe("when reminder stream was NOT found by entityId", () => {
+			let saveResult: GetByIdSuccess;
+			const unknownId = v4();
+
+			beforeAll(async () => {
+				const result = await reminderRepository.getById(unknownId);
+				assertSuccess(result);
+				saveResult = result;
+			});
+
+			it("then result should be Reminder", async () => {
+				expect(saveResult.getData().reminder).toBeNull();
 			});
 		});
 	});

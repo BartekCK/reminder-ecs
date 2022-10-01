@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import { v4 } from "uuid";
 import { IDomainEventPayload } from "../../events";
 
-export const createDomainEventMock = (
+export const createDomainEventPayloadMock = (
 	args?: Partial<IDomainEventPayload>
 ): IDomainEventPayload => {
 	return {

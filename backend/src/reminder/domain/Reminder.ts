@@ -7,27 +7,60 @@ import {
 } from "./behaviours/createResult";
 import { AggregateRoot } from "../../common/domain";
 import { CreateReminderDomainEvent } from "./events/createReminder/CreateReminderDomainEvent";
-import { OutcomeSuccess } from "../../common/error-handling";
+import { InvalidEventFailure, OutcomeSuccess } from "../../common/error-handling";
+import { IReminderEventPayload } from "./events";
+import { DomainEvent } from "../../common/events";
 
 export class ReminderApplySuccess extends OutcomeSuccess<{ reminder: IReminder }> {}
 
-type ReminderApplyResult = ReminderApplySuccess;
+type ReminderApplyResult = ReminderApplySuccess | InvalidEventFailure;
 
 export class Reminder extends AggregateRoot implements IReminder {
-	private constructor(private readonly props: ReminderProps) {
+	private constructor(private props: ReminderProps) {
 		super();
 	}
 
-	public static apply(): ReminderApplyResult {
-		//TODO: Create apply method and add domain events as arg
-		const state: ReminderProps = {
-			note: "",
-			executedAt: null,
-			userId: "",
-			id: "",
-		};
+	private setProps(props: ReminderProps) {
+		this.props = props;
+	}
 
-		return ReminderApplySuccess.create({ reminder: new Reminder(state) });
+	public static apply(events: DomainEvent<IReminderEventPayload>[]): ReminderApplyResult {
+		const reminder = new Reminder({
+			id: v4() as ReminderId,
+			userId: "",
+			note: "",
+			plannedExecutionDate: undefined,
+			executedAt: null,
+		});
+
+		for (const event of events) {
+			if (event.getEventName() === CreateReminderDomainEvent.name) {
+				const applyResult = CreateReminderDomainEvent.apply(event);
+
+				if (applyResult.isFailure()) {
+					return applyResult;
+				}
+
+				const createReminderEvent = applyResult.getData();
+
+				reminder.addDomainEvent(createReminderEvent);
+				const { note, userId, plannedExecutionDate } = createReminderEvent.getData();
+				reminder.setProps({
+					id: createReminderEvent.getEntityId(),
+					plannedExecutionDate,
+					userId,
+					executedAt: null,
+					note,
+				});
+			} else {
+				return InvalidEventFailure.unknownError({
+					eventName: event.getEventName(),
+					eventId: event.getPayload().id,
+				});
+			}
+		}
+
+		return ReminderApplySuccess.create({ reminder });
 	}
 
 	public static create(

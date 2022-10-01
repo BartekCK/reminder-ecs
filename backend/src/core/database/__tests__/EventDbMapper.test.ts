@@ -1,50 +1,50 @@
 import { IEventDBMapper } from "../../../common/database";
 import { EventDBMapper } from "../EventDbMapper";
 import {
-	createDomainEventMock,
+	createDomainEventPayloadMock,
 	createEventDbItemMock,
 } from "../../../common/tests/mocks";
+import { DomainEvent } from "../../../common/events";
 
 describe("Event store db mapper", () => {
 	const mapper: IEventDBMapper = new EventDBMapper();
 
 	it("should map IDomainEventPayload into IEventDBItem", () => {
-		const eventDBItem = mapper.mapDomainEventPayloadIntoEventItem(
-			createDomainEventMock()
-		);
+		const domainEvent = new DomainEvent(createDomainEventPayloadMock());
+		const eventDBItem = mapper.mapDomainEventIntoEventItem(domainEvent);
 
 		expect(eventDBItem).toEqual({
-			id: expect.any(String),
-			name: expect.any(String),
-			version: 1,
-			entityId: expect.any(String),
-			sequence: expect.any(Number),
+			id: domainEvent.getPayload().id,
+			name: domainEvent.getPayload().name,
+			version: domainEvent.getPayload().version,
+			entityId: domainEvent.getPayload().entityId,
+			sequence: domainEvent.getPayload().sequence,
 			metadata: {
-				traceId: expect.any(String),
-				commandName: expect.any(String),
-				generatedAt: expect.any(String),
+				traceId: domainEvent.getPayload().metadata.traceId,
+				commandName: domainEvent.getPayload().metadata.commandName,
+				generatedAt: domainEvent.getPayload().metadata.generatedAt.toISOString(),
 			},
-			data: expect.any(String),
+			data: JSON.stringify(domainEvent.getPayload().data),
 		});
 	});
 
 	it("should map IEventDBItem into IDomainEventPayload", () => {
-		const eventPayload = mapper.mapEventItemIntoDomainEventPayload(
-			createEventDbItemMock()
-		);
+		const eventDBItem = createEventDbItemMock();
+		const domainEvent = mapper.mapEventItemIntoDomainEvent(eventDBItem);
 
-		expect(eventPayload).toEqual({
-			id: expect.any(String),
-			name: expect.any(String),
-			version: 1,
-			entityId: expect.any(String),
-			sequence: expect.any(Number),
+		expect(domainEvent).toBeInstanceOf(DomainEvent);
+		expect(domainEvent.getPayload()).toEqual({
+			id: eventDBItem.id,
+			name: eventDBItem.name,
+			version: eventDBItem.version,
+			entityId: eventDBItem.entityId,
+			sequence: eventDBItem.sequence,
 			metadata: {
-				traceId: expect.any(String),
-				commandName: expect.any(String),
-				generatedAt: expect.any(Date),
+				traceId: eventDBItem.metadata.traceId,
+				commandName: eventDBItem.metadata.commandName,
+				generatedAt: new Date(eventDBItem.metadata.generatedAt),
 			},
-			data: expect.any(Object),
+			data: JSON.parse(eventDBItem.data),
 		});
 	});
 });

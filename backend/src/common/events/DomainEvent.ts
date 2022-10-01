@@ -1,13 +1,25 @@
 import { IDomainEventPayload } from "./domainEvent.interface";
 
-export abstract class DomainEvent<T = IDomainEventPayload> {
+export class DomainEvent<T = IDomainEventPayload> {
 	private readonly props: T;
 
-	protected constructor(props: T) {
+	public constructor(props: T) {
 		this.props = props;
 	}
 
-	public getProps(): T {
+	public getPayload(): T {
 		return this.props;
+	}
+
+	public getEventName(): string {
+		return (this.props as IDomainEventPayload).name;
+	}
+
+	public getData(): T extends IDomainEventPayload ? T["data"] : any {
+		return (this.props as IDomainEventPayload).data;
+	}
+
+	public getEntityId(): string {
+		return (this.props as IDomainEventPayload).entityId;
 	}
 }
