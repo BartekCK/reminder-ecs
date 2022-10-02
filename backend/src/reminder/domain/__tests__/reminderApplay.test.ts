@@ -1,6 +1,6 @@
 import { createDomainEventPayloadMock } from "../../../common/tests/mocks";
 import { DomainEvent } from "../../../common/events";
-import { Reminder, ReminderApplySuccess } from "../Reminder";
+import { Reminder } from "../Reminder";
 import { IReminderEventPayload } from "../events";
 import { assertFailure } from "../../../common/tests/assertFailure";
 import { InvalidEventFailure } from "../../../common/error-handling";
@@ -9,6 +9,7 @@ import { ICreateReminderDomainEventPayload } from "../events/createReminder/crea
 import { faker } from "@faker-js/faker";
 import { v4 } from "uuid";
 import { assertSuccess } from "../../../common/tests";
+import { ReminderApplySuccess } from "../behaviours/applyResult";
 
 describe("Reminder apply events", () => {
 	describe("Given unknown error", () => {

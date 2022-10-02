@@ -7,13 +7,10 @@ import {
 } from "./behaviours/createResult";
 import { AggregateRoot } from "../../common/domain";
 import { CreateReminderDomainEvent } from "./events/createReminder/CreateReminderDomainEvent";
-import { InvalidEventFailure, OutcomeSuccess } from "../../common/error-handling";
+import { InvalidEventFailure } from "../../common/error-handling";
 import { IReminderEventPayload } from "./events";
 import { DomainEvent } from "../../common/events";
-
-export class ReminderApplySuccess extends OutcomeSuccess<{ reminder: IReminder }> {}
-
-type ReminderApplyResult = ReminderApplySuccess | InvalidEventFailure;
+import { ReminderApplyResult, ReminderApplySuccess } from "./behaviours/applyResult";
 
 export class Reminder extends AggregateRoot implements IReminder {
 	private constructor(private props: ReminderProps) {
