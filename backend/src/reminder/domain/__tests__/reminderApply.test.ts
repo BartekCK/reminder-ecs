@@ -10,6 +10,8 @@ import { faker } from "@faker-js/faker";
 import { v4 } from "uuid";
 import { assertSuccess } from "../../../common/tests";
 import { ReminderApplySuccess } from "../behaviours/applyResult";
+import { IDeleteReminderDomainEventPayload } from "../events/deleteReminder/deleteReminderPayload.interface";
+import { DeleteReminderDomainEvent } from "../events/deleteReminder/DeleteReminderDomainEvent";
 
 describe("Reminder apply events", () => {
 	describe("Given unknown error", () => {
@@ -48,6 +50,7 @@ describe("Reminder apply events", () => {
 		const userId = v4();
 		const note = faker.lorem.slug();
 		const plannedExecutionDate = faker.date.future();
+		const deletedAt = faker.date.future();
 
 		const eventsForApply: DomainEvent<IReminderEventPayload>[] = [
 			new DomainEvent<ICreateReminderDomainEventPayload>({
@@ -60,6 +63,15 @@ describe("Reminder apply events", () => {
 					plannedExecutionDate,
 				},
 				sequence: 1,
+			}),
+			new DomainEvent<IDeleteReminderDomainEventPayload>({
+				...createDomainEventPayloadMock(),
+				entityId,
+				name: DeleteReminderDomainEvent.name,
+				data: {
+					deletedAt,
+				},
+				sequence: 2,
 			}),
 		];
 
@@ -79,6 +91,7 @@ describe("Reminder apply events", () => {
 					note,
 					plannedExecutionDate,
 					executedAt: null,
+					deletedAt,
 					userId,
 				});
 			});

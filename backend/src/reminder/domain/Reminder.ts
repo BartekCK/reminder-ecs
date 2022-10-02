@@ -11,6 +11,14 @@ import { InvalidEventFailure } from "../../common/error-handling";
 import { IReminderEventPayload } from "./events";
 import { DomainEvent } from "../../common/events";
 import { ReminderApplyResult, ReminderApplySuccess } from "./behaviours/applyResult";
+import {
+	ReminderDeleteFailure,
+	ReminderDeleteResult,
+	ReminderDeleteSuccess,
+} from "./behaviours/deleteResult";
+import { DeleteReminderDomainEvent } from "./events/deleteReminder/DeleteReminderDomainEvent";
+import { ICreateReminderDomainEventPayload } from "./events/createReminder/createReminderPayload.interface";
+import { IDeleteReminderDomainEventPayload } from "./events/deleteReminder/deleteReminderPayload.interface";
 
 export class Reminder extends AggregateRoot implements IReminder {
 	private constructor(private props: ReminderProps) {
@@ -28,11 +36,14 @@ export class Reminder extends AggregateRoot implements IReminder {
 			note: "",
 			plannedExecutionDate: undefined,
 			executedAt: null,
+			deletedAt: null,
 		});
 
 		for (const event of events) {
 			if (event.getEventName() === CreateReminderDomainEvent.name) {
-				const applyResult = CreateReminderDomainEvent.apply(event);
+				const applyResult = CreateReminderDomainEvent.apply(
+					event as DomainEvent<ICreateReminderDomainEventPayload>
+				);
 
 				if (applyResult.isFailure()) {
 					return applyResult;
@@ -47,7 +58,25 @@ export class Reminder extends AggregateRoot implements IReminder {
 					plannedExecutionDate,
 					userId,
 					executedAt: null,
+					deletedAt: null,
 					note,
+				});
+			} else if (event.getEventName() === DeleteReminderDomainEvent.name) {
+				const applyResult = DeleteReminderDomainEvent.apply(
+					event as DomainEvent<IDeleteReminderDomainEventPayload>
+				);
+
+				if (applyResult.isFailure()) {
+					return applyResult;
+				}
+
+				const deleteReminderEvent = applyResult.getData();
+
+				reminder.addDomainEvent(deleteReminderEvent);
+				const { deletedAt } = deleteReminderEvent.getData();
+				reminder.setProps({
+					...reminder.getProps(),
+					deletedAt,
 				});
 			} else {
 				return InvalidEventFailure.unknownError({
@@ -92,9 +121,10 @@ export class Reminder extends AggregateRoot implements IReminder {
 			note,
 			plannedExecutionDate,
 			executedAt: null,
+			deletedAt: null,
 		});
 
-		const event = CreateReminderDomainEvent.create(
+		const eventResult = CreateReminderDomainEvent.create(
 			{
 				note,
 				userId,
@@ -108,19 +138,45 @@ export class Reminder extends AggregateRoot implements IReminder {
 			}
 		);
 
-		if (event.isFailure()) {
-			return event;
+		if (eventResult.isFailure()) {
+			return eventResult;
 		}
 
-		reminder.addDomainEvent(event.getData());
+		reminder.addDomainEvent(eventResult.getData());
 
 		return ReminderCreateSuccess.create({
 			reminder,
 		});
 	}
 
-	delete(): any {
-		throw new Error("Not implemented yet");
+	delete(context: { traceId: string; commandName: string }): ReminderDeleteResult {
+		if (this.props.deletedAt) {
+			return ReminderDeleteFailure.reminderAlreadyDelete(this.getId());
+		}
+
+		const deletedAt = new Date();
+
+		const eventResult = DeleteReminderDomainEvent.create(
+			{
+				deletedAt,
+			},
+			{
+				entityId: this.getId(),
+				sequence: this.getSequence(),
+				traceId: context.traceId,
+				commandName: context.commandName,
+			}
+		);
+
+		if (eventResult.isFailure()) {
+			return eventResult;
+		}
+
+		this.addDomainEvent(eventResult.getData());
+
+		this.props.deletedAt = deletedAt;
+
+		return ReminderDeleteSuccess.create(null);
 	}
 
 	markAsResolved(): any {
