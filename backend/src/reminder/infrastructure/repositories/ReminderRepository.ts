@@ -58,8 +58,7 @@ export class ReminderRepository implements IReminderRepository {
 		);
 
 		if (applyResult.isFailure()) {
-			//TODO: Implement results for apply method
-			throw new Error("Not implemented yet");
+			return applyResult;
 		}
 
 		const { reminder } = applyResult.getData();

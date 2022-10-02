@@ -12,14 +12,14 @@ export class DomainEvent<T = IDomainEventPayload> {
 	}
 
 	public getEventName(): string {
-		return (this.props as IDomainEventPayload).name;
+		return (this.props as unknown as IDomainEventPayload).name;
 	}
 
 	public getData(): T extends IDomainEventPayload ? T["data"] : any {
-		return (this.props as IDomainEventPayload).data;
+		return (this.props as unknown as IDomainEventPayload).data;
 	}
 
 	public getEntityId(): string {
-		return (this.props as IDomainEventPayload).entityId;
+		return (this.props as unknown as IDomainEventPayload).entityId;
 	}
 }
