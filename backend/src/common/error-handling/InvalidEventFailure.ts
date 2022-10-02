@@ -4,6 +4,7 @@ interface IContext {
 	message?: string;
 	eventName?: string;
 	eventId?: string;
+	aggregateName?: string;
 }
 
 export class InvalidEventFailure extends OutcomeFailure<IContext> {
@@ -21,6 +22,6 @@ export class InvalidEventFailure extends OutcomeFailure<IContext> {
 	}
 
 	public static unknownError(context: Omit<IContext, "message">) {
-		return new InvalidEventFailure(context, "Given event wasn't applied");
+		return new InvalidEventFailure(context, "Unknown error occurred during applying");
 	}
 }

@@ -8,7 +8,7 @@ import {
 import { EventDBMapper } from "../../../../core/database";
 import { EnvironmentLocalStore } from "../../../../common/environment/application/EnviromentLocalStore";
 import { OsEnvironment } from "../../../../common/environment/infrastructure/OsEnviroment";
-import { ReminderMock } from "../../../../__tests__/mocks";
+import { ReminderMock } from "../../../../__tests__/reminder/mocks";
 import { DatabaseClient, IDatabaseClient } from "../../../../common/database";
 import { assertSuccess } from "../../../../common/tests";
 import { IReminderEventPayload } from "../../../domain/events";

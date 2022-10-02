@@ -56,10 +56,12 @@ export class Reminder extends AggregateRoot implements IReminder {
 				return InvalidEventFailure.unknownError({
 					eventName: event.getEventName(),
 					eventId: event.getPayload().id,
+					aggregateName: Reminder.name,
 				});
 			}
 		}
 
+		reminder.clearDomainEvents();
 		return ReminderApplySuccess.create({ reminder });
 	}
 

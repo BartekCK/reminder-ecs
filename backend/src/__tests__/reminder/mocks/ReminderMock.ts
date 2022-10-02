@@ -1,4 +1,4 @@
-import { IReminder, Reminder } from "../../reminder/domain";
+import { IReminder, Reminder } from "../../../reminder/domain";
 import { faker } from "@faker-js/faker";
 import { v4 } from "uuid";
 import { VError } from "verror";
