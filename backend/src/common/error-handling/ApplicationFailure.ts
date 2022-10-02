@@ -43,4 +43,13 @@ export class ApplicationFailure extends OutcomeFailure<IContext | ZodError> {
 			originalContext: context,
 		});
 	}
+
+	public static notFound(reason: string, context: any) {
+		return new ApplicationFailure({
+			originalErrorScope: "DOMAIN_ERROR",
+			originalErrorCode: "OBJECT_NOT_FOUND",
+			originalReason: reason,
+			originalContext: context,
+		});
+	}
 }
