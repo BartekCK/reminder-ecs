@@ -6,8 +6,8 @@ export abstract class AggregateRoot implements IAggregateRoot {
 	private domainEvents: DomainEvent[] = [];
 
 	protected addDomainEvent(domainEvent: DomainEvent): void {
-		this.sequence += 1;
 		this.domainEvents.push(domainEvent);
+		this.sequence += 1;
 	}
 
 	public clearDomainEvents(): void {

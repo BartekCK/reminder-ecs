@@ -16,6 +16,8 @@ import { ReminderController } from "../../reminder/presentation/controllers/Remi
 import { ReminderRouter } from "../../reminder/presentation/reminderRouter";
 import { EventDBMapper } from "../database";
 import { DatabaseClient, IDatabaseClient } from "../../common/database";
+import { DeleteReminderHandler } from "../../reminder/application/commands/delete-reminder/DeleteReminderHandler";
+import { DeleteReminderCommand } from "../../reminder/application/commands/delete-reminder/DeleteReminderCommand";
 
 export interface IDependencies {
 	reminderRepository: IReminderRepository;
@@ -56,10 +58,11 @@ export class DependencyInjector {
 		);
 
 		const createReminderHandler = new CreateReminderHandler({ reminderRepository });
+		const deleteReminderHandler = new DeleteReminderHandler({ reminderRepository });
 
-		const commandMap: Map<string, ICommandHandler<ICommand, Promise<Result>>> = new Map([
-			[CreateReminderCommand.name, createReminderHandler],
-		]);
+		const commandMap: Map<string, ICommandHandler<ICommand, Promise<Result>>> = new Map();
+		commandMap.set(CreateReminderCommand.name, createReminderHandler);
+		commandMap.set(DeleteReminderCommand.name, deleteReminderHandler);
 
 		const commandBus: ICommandBus = new CommandBus(commandMap);
 
