@@ -7,10 +7,59 @@ import {
 } from "./behaviours/createResult";
 import { AggregateRoot } from "../../common/domain";
 import { CreateReminderDomainEvent } from "./events/createReminder/CreateReminderDomainEvent";
+import { InvalidEventFailure } from "../../common/error-handling";
+import { IReminderEventPayload } from "./events";
+import { DomainEvent } from "../../common/events";
+import { ReminderApplyResult, ReminderApplySuccess } from "./behaviours/applyResult";
 
 export class Reminder extends AggregateRoot implements IReminder {
-	private constructor(private readonly props: ReminderProps) {
+	private constructor(private props: ReminderProps) {
 		super();
+	}
+
+	private setProps(props: ReminderProps) {
+		this.props = props;
+	}
+
+	public static apply(events: DomainEvent<IReminderEventPayload>[]): ReminderApplyResult {
+		const reminder = new Reminder({
+			id: v4() as ReminderId,
+			userId: "",
+			note: "",
+			plannedExecutionDate: undefined,
+			executedAt: null,
+		});
+
+		for (const event of events) {
+			if (event.getEventName() === CreateReminderDomainEvent.name) {
+				const applyResult = CreateReminderDomainEvent.apply(event);
+
+				if (applyResult.isFailure()) {
+					return applyResult;
+				}
+
+				const createReminderEvent = applyResult.getData();
+
+				reminder.addDomainEvent(createReminderEvent);
+				const { note, userId, plannedExecutionDate } = createReminderEvent.getData();
+				reminder.setProps({
+					id: createReminderEvent.getEntityId(),
+					plannedExecutionDate,
+					userId,
+					executedAt: null,
+					note,
+				});
+			} else {
+				return InvalidEventFailure.unknownError({
+					eventName: event.getEventName(),
+					eventId: event.getPayload().id,
+					aggregateName: Reminder.name,
+				});
+			}
+		}
+
+		reminder.clearDomainEvents();
+		return ReminderApplySuccess.create({ reminder });
 	}
 
 	public static create(

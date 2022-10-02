@@ -37,7 +37,26 @@ export class CreateReminderDomainEvent extends DomainEvent<ICreateReminderDomain
 		const parseResult = createReminderDomainEventPayloadSchema.safeParse(payload);
 
 		if (!parseResult.success) {
-			return InvalidEventFailure.create({
+			return InvalidEventFailure.incorrectPayload({
+				name: parseResult.error.name,
+				message: parseResult.error.message,
+			});
+		}
+
+		return CreateReminderDomainEventSuccess.create(
+			new CreateReminderDomainEvent(payload)
+		);
+	}
+
+	public static apply(
+		event: DomainEvent<ICreateReminderDomainEventPayload>
+	): CreateReminderDomainEventResult {
+		const payload = event.getPayload();
+
+		const parseResult = createReminderDomainEventPayloadSchema.safeParse(payload);
+
+		if (!parseResult.success) {
+			return InvalidEventFailure.incorrectPayload({
 				name: parseResult.error.name,
 				message: parseResult.error.message,
 			});

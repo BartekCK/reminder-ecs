@@ -32,7 +32,7 @@ describe("Reminder test", () => {
 				const event = result
 					.getData()
 					.reminder.getChanges()
-					.find((event) => event.getProps().name === CreateReminderDomainEvent.name);
+					.find((event) => event.getPayload().name === CreateReminderDomainEvent.name);
 
 				expect(event).toBeDefined();
 			});

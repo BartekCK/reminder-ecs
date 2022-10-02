@@ -1,11 +1,15 @@
 import {
+	GetByIdResult,
+	GetByIdSuccess,
 	IReminderRepository,
 	SaveReminderResult,
 	SaveReminderSuccess,
 } from "../../application/repositories";
-import { IReminder } from "../../domain";
+import { IReminder, Reminder } from "../../domain";
 import { WriteRequest } from "@aws-sdk/client-dynamodb/dist-types/models/models_0";
-import { IDatabaseClient, IEventDBMapper } from "../../../common/database";
+import { IDatabaseClient, IEventDBItem, IEventDBMapper } from "../../../common/database";
+import { DomainEvent } from "../../../common/events";
+import { IReminderEventPayload } from "../../domain/events";
 
 export class ReminderRepository implements IReminderRepository {
 	constructor(
@@ -19,7 +23,7 @@ export class ReminderRepository implements IReminderRepository {
 
 		const putRequests: WriteRequest[] = events.map((event) => ({
 			PutRequest: {
-				Item: this.mapper.mapDomainEventPayloadIntoEventItem(event.getProps()),
+				Item: this.mapper.mapDomainEventIntoEventItem(event),
 			},
 		}));
 
@@ -28,5 +32,37 @@ export class ReminderRepository implements IReminderRepository {
 		});
 
 		return SaveReminderSuccess.create({ reminderId: reminder.getId() });
+	}
+
+	async getById(id: string): Promise<GetByIdResult> {
+		const result = await this.client.query({
+			TableName: this.dbName,
+			Select: "ALL_ATTRIBUTES",
+			KeyConditionExpression: "entityId = :entityId",
+			ExpressionAttributeValues: {
+				":entityId": id,
+			},
+			ScanIndexForward: true,
+		});
+
+		if (!result.Items || !result.Items.length) {
+			return GetByIdSuccess.create({ reminder: null });
+		}
+
+		const domainEvents: DomainEvent[] = result.Items.map((item) =>
+			this.mapper.mapEventItemIntoDomainEvent(item as IEventDBItem)
+		);
+
+		const applyResult = Reminder.apply(
+			domainEvents as DomainEvent<IReminderEventPayload>[]
+		);
+
+		if (applyResult.isFailure()) {
+			return applyResult;
+		}
+
+		const { reminder } = applyResult.getData();
+
+		return GetByIdSuccess.create({ reminder });
 	}
 }
