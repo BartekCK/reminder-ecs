@@ -1,6 +1,5 @@
 import { ReminderRepository } from "../ReminderRepository";
 import {
-	GetByIdResult,
 	GetByIdSuccess,
 	IReminderRepository,
 	SaveReminderSuccess,
@@ -11,7 +10,6 @@ import { OsEnvironment } from "../../../../common/environment/infrastructure/OsE
 import { ReminderMock } from "../../../../__tests__/reminder/mocks";
 import { DatabaseClient, IDatabaseClient } from "../../../../common/database";
 import { assertSuccess } from "../../../../common/tests";
-import { IReminderEventPayload } from "../../../domain/events";
 import { v4 } from "uuid";
 
 describe("ReminderRepository", () => {

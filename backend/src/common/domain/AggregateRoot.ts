@@ -1,4 +1,4 @@
-import { DomainEvent, IDomainEventPayload } from "../events";
+import { DomainEvent } from "../events";
 import { IAggregateRoot } from "./aggregateRoot.interface";
 
 export abstract class AggregateRoot implements IAggregateRoot {

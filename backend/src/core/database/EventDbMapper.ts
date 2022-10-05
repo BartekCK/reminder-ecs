@@ -1,5 +1,5 @@
 import { DomainEvent } from "../../common/events";
-import { IEventDBMapper, IEventDBItem } from "../../common/database";
+import { IEventDBItem, IEventDBMapper } from "../../common/database";
 
 export class EventDBMapper implements IEventDBMapper {
 	mapDomainEventIntoEventItem(domainEvent: DomainEvent): IEventDBItem {

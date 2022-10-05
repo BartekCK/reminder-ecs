@@ -7,10 +7,8 @@ class App {
 
 		await DependencyInjector.create();
 
-		const {
-			reminderRouter,
-			environmentLocalStore,
-		} = DependencyInjector.getDependencies();
+		const { reminderRouter, environmentLocalStore } =
+			DependencyInjector.getDependencies();
 
 		app.use(express.json());
 

@@ -1,4 +1,8 @@
-import { ApplicationFailure, OutcomeSuccess } from "../../../../common/error-handling";
+import {
+	DatabaseFailure,
+	InvalidEventFailure,
+	OutcomeSuccess,
+} from "../../../../common/error-handling";
 import { IReminderRepository } from "../../repositories";
 import { Reminder } from "../../../domain";
 import { ICommand, ICommandHandler } from "../../../../common/command-bus";
@@ -7,12 +11,19 @@ import {
 	createReminderCommandPayloadSchema,
 	ICreateReminderCommand,
 } from "./CreateReminderCommand";
+import { InvalidPayloadFailure } from "../../../../common/error-handling/InvalidPayloadFailure";
+import { ReminderCreateFailure } from "../../../domain/behaviours/createResult";
 
 export class CreateReminderCommandSuccess extends OutcomeSuccess<null> {}
+export type CreateReminderCommandFailure =
+	| DatabaseFailure
+	| InvalidPayloadFailure
+	| ReminderCreateFailure
+	| InvalidEventFailure;
 
 export type CreateReminderCommandResult =
 	| CreateReminderCommandSuccess
-	| ApplicationFailure;
+	| CreateReminderCommandFailure;
 
 type Dependencies = {
 	reminderRepository: IReminderRepository;
@@ -32,7 +43,7 @@ export class CreateReminderHandler
 		const validationResult = createReminderCommandPayloadSchema.safeParse(command);
 
 		if (!validationResult.success) {
-			return ApplicationFailure.invalidPayload(validationResult.error);
+			return InvalidPayloadFailure.create(validationResult.error);
 		}
 
 		const createReminderResult = Reminder.create(validationResult.data, {
@@ -41,7 +52,7 @@ export class CreateReminderHandler
 		});
 
 		if (createReminderResult.isFailure()) {
-			return ApplicationFailure.domainError(createReminderResult);
+			return createReminderResult;
 		}
 
 		const { reminder } = createReminderResult.getData();
@@ -49,7 +60,7 @@ export class CreateReminderHandler
 		const saveResult = await this.reminderRepository.save(reminder);
 
 		if (saveResult.isFailure()) {
-			return ApplicationFailure.infrastructureError(saveResult);
+			return saveResult;
 		}
 
 		return CreateReminderCommandSuccess.create(null);
