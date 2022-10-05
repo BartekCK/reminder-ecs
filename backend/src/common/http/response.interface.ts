@@ -1,3 +1,3 @@
 import { Response } from "express";
 
-export type HttpResponse<Body> = Response<Body>;
+export type HttpResponse<Body = any> = Response<Body>;

@@ -1,4 +1,8 @@
-import { ApplicationFailure, OutcomeSuccess } from "../../../../common/error-handling";
+import {
+	DatabaseFailure,
+	InvalidEventFailure,
+	OutcomeSuccess,
+} from "../../../../common/error-handling";
 import { IReminderRepository } from "../../repositories";
 import { ICommand, ICommandHandler } from "../../../../common/command-bus";
 import {
@@ -6,12 +10,22 @@ import {
 	deleteReminderCommandPayloadSchema,
 	IDeleteReminderCommand,
 } from "./DeleteReminderCommand";
+import { NotFoundFailure } from "../../../../common/error-handling/NotFoundFailure";
+import { ReminderDeleteFailure } from "../../../domain/behaviours/deleteResult";
+import { InvalidPayloadFailure } from "../../../../common/error-handling/InvalidPayloadFailure";
 
 export class DeleteReminderCommandSuccess extends OutcomeSuccess<null> {}
 
+export type DeleteReminderCommandFailure =
+	| InvalidPayloadFailure
+	| InvalidEventFailure
+	| DatabaseFailure
+	| NotFoundFailure
+	| ReminderDeleteFailure;
+
 export type DeleteReminderCommandResult =
 	| DeleteReminderCommandSuccess
-	| ApplicationFailure;
+	| DeleteReminderCommandFailure;
 
 type Dependencies = {
 	reminderRepository: IReminderRepository;
@@ -31,25 +45,23 @@ export class DeleteReminderHandler
 		const validationResult = deleteReminderCommandPayloadSchema.safeParse(command);
 
 		if (!validationResult.success) {
-			return ApplicationFailure.invalidPayload(validationResult.error);
+			return InvalidPayloadFailure.create(validationResult.error);
 		}
 
-		//TODO: User id will be here to check access for given reminder
-		const { reminderId, userId, traceId } = validationResult.data;
+		const { reminderId, traceId } = validationResult.data;
 
 		const getReminderByIdResult = await this.reminderRepository.getById(reminderId);
 
 		if (getReminderByIdResult.isFailure()) {
-			return getReminderByIdResult.getError().errorScope === "DOMAIN_ERROR"
-				? ApplicationFailure.domainError(getReminderByIdResult)
-				: ApplicationFailure.infrastructureError(getReminderByIdResult);
+			return getReminderByIdResult;
 		}
 
 		const { reminder } = getReminderByIdResult.getData();
 
 		if (!reminder) {
-			return ApplicationFailure.notFound("Reminder by given id not found", {
+			return NotFoundFailure.create({
 				reminderId,
+				commandName: DeleteReminderHandler.name,
 			});
 		}
 
@@ -59,13 +71,13 @@ export class DeleteReminderHandler
 		});
 
 		if (deleteReminderResult.isFailure()) {
-			return ApplicationFailure.domainError(deleteReminderResult);
+			return deleteReminderResult;
 		}
 
 		const saveResult = await this.reminderRepository.save(reminder);
 
 		if (saveResult.isFailure()) {
-			return ApplicationFailure.infrastructureError(saveResult);
+			return saveResult;
 		}
 
 		return DeleteReminderCommandSuccess.create(null);

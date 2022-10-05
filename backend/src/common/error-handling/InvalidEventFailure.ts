@@ -7,13 +7,15 @@ interface IContext {
 	aggregateName?: string;
 }
 
+export const InvalidEventFailureErrorCode = "INVALID_EVENT" as const;
+
 export class InvalidEventFailure extends OutcomeFailure<IContext> {
 	private constructor(context: IContext, reason: string) {
 		super({
 			errorScope: "DOMAIN_ERROR",
 			reason,
 			context: context,
-			errorCode: "INVALID_EVENT",
+			errorCode: InvalidEventFailureErrorCode,
 		});
 	}
 

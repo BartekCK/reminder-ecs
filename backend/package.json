@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/app.ts",
+    "dev": "NODE_ENV=development nodemon src/app.ts",
     "build": "rimraf dist && tsc",
     "lint": "eslint \"src/**/*.ts\" --fix --quiet",
     "check-types": "tsc --noEmit",
     "temp+pretest": "chmod u+x ./scripts/localDynamoDBBootstrap.sh && TABLE_NAME=test_events_table ./scripts/localDynamoDBBootstrap.sh",
-    "test": "jest --runInBand --verbose",
+    "test": "NODE_ENV=test && jest --runInBand --verbose",
     "temp+posttest": "chmod u+x ./scripts/localDynamoDBClear.sh && TABLE_NAME=test_events_table ./scripts/localDynamoDBClear.sh"
   },
   "author": "",

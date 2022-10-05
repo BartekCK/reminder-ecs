@@ -8,8 +8,12 @@ import { CreateReminderCommand } from "../CreateReminderCommand";
 import { faker } from "@faker-js/faker";
 import { v4 } from "uuid";
 import { IDatabaseClient } from "../../../../../common/database";
-import { ApplicationFailure } from "../../../../../common/error-handling";
 import { IReminderRepository } from "../../../repositories";
+import { assertFailure } from "../../../../../common/tests/assertFailure";
+import {
+	InvalidPayloadFailure,
+	OutcomeFailure,
+} from "../../../../../common/error-handling";
 
 describe("Create reminder handler", () => {
 	let tableName: string;
@@ -91,7 +95,7 @@ describe("Create reminder handler", () => {
 		});
 
 		describe("when command is executed", () => {
-			let result: ApplicationFailure;
+			let result: OutcomeFailure;
 
 			beforeAll(async () => {
 				jest.spyOn(reminderRepository, "save");
@@ -101,9 +105,7 @@ describe("Create reminder handler", () => {
 					Promise<CreateReminderCommandResult>
 				>(command);
 
-				if (handlerResult.isSuccess()) {
-					throw new Error("Should return failure");
-				}
+				assertFailure(handlerResult);
 
 				result = handlerResult;
 			});
@@ -111,8 +113,12 @@ describe("Create reminder handler", () => {
 			it("then result should be failure", () => {
 				expect(result.isFailure()).toBeTruthy();
 
-				expect(result.getError().errorScope).toEqual("APPLICATION_ERROR");
+				expect(result.getError().errorScope).toEqual("DOMAIN_ERROR");
 				expect(result.getError().errorCode).toEqual("INCORRECT_COMMAND_PAYLOAD");
+			});
+
+			it("then failure should be InvalidPayloadFailure", () => {
+				expect(result).toBeInstanceOf(InvalidPayloadFailure);
 			});
 
 			it("then repository should not be call", () => {
