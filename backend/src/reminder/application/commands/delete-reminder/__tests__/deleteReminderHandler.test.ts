@@ -7,12 +7,16 @@ import { ICommandBus } from "../../../../../common/command-bus";
 import { DeleteReminderCommand } from "../DeleteReminderCommand";
 import { v4 } from "uuid";
 import { IDatabaseClient } from "../../../../../common/database";
-import { ApplicationFailure } from "../../../../../common/error-handling";
 import { IReminderRepository } from "../../../repositories";
 import { ReminderMock } from "../../../../../__tests__/reminder/mocks";
 import { IReminder } from "../../../../domain";
 import { assertFailure } from "../../../../../common/tests/assertFailure";
 import { assertSuccess } from "../../../../../common/tests";
+import {
+	InvalidPayloadFailure,
+	NotFoundFailure,
+	OutcomeFailure,
+} from "../../../../../common/error-handling";
 
 describe("Delete reminder handler", () => {
 	let tableName: string;
@@ -106,7 +110,7 @@ describe("Delete reminder handler", () => {
 		});
 
 		describe("when command is executed", () => {
-			let result: ApplicationFailure;
+			let result: OutcomeFailure;
 
 			beforeAll(async () => {
 				const handlerResult = await commandBus.execute<
@@ -119,18 +123,20 @@ describe("Delete reminder handler", () => {
 				result = handlerResult;
 			});
 
+			it("then failure should be InvalidPayloadFailure", () => {
+				expect(result).toBeInstanceOf(NotFoundFailure);
+			});
+
 			it("then failure should be returned", () => {
 				expect(result.isFailure()).toBeTruthy();
 
 				expect(result.getError()).toEqual({
-					errorScope: "APPLICATION_ERROR",
-					errorCode: "",
-					reason: "",
+					errorScope: "DOMAIN_ERROR",
+					errorCode: "ENTITY_NOT_FOUND",
+					reason: "Entity not found",
 					context: {
-						originalErrorScope: "DOMAIN_ERROR",
-						originalErrorCode: "OBJECT_NOT_FOUND",
-						originalReason: "Reminder by given id not found",
-						originalContext: { reminderId: unknownReminderId },
+						commandName: "DeleteReminderHandler",
+						reminderId: unknownReminderId,
 					},
 				});
 			});
@@ -145,7 +151,7 @@ describe("Delete reminder handler", () => {
 		});
 
 		describe("when command is executed", () => {
-			let result: ApplicationFailure;
+			let result: OutcomeFailure;
 
 			beforeAll(async () => {
 				jest.spyOn(reminderRepository, "save");
@@ -163,8 +169,12 @@ describe("Delete reminder handler", () => {
 			it("then result should be failure", () => {
 				expect(result.isFailure()).toBeTruthy();
 
-				expect(result.getError().errorScope).toEqual("APPLICATION_ERROR");
+				expect(result.getError().errorScope).toEqual("DOMAIN_ERROR");
 				expect(result.getError().errorCode).toEqual("INCORRECT_COMMAND_PAYLOAD");
+			});
+
+			it("then failure should be InvalidPayloadFailure", () => {
+				expect(result).toBeInstanceOf(InvalidPayloadFailure);
 			});
 
 			it("then repository should not be call", () => {

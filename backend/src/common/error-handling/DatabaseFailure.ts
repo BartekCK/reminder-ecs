@@ -16,7 +16,7 @@ export class DatabaseFailure extends OutcomeFailure<IContext | ZodError> {
 		});
 	}
 
-	public static DatabaseFailure(errorCode: string, error: Error) {
+	public static create(errorCode: string, error: Error) {
 		return new DatabaseFailure(errorCode, {
 			name: error.name,
 			message: error.message,

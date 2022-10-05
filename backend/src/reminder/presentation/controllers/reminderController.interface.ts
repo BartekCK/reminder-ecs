@@ -1,5 +1,5 @@
 import { HttpRequest, HttpResponse } from "../../../common/http";
-import { INewReminderPropsDto } from "../dto/NewReminder";
+import { INewReminderPropsDto } from "../dto/newReminder";
 import { DeleteReminderCommandFailure } from "../../application/commands/delete-reminder/DeleteReminderHandler";
 import { CreateReminderCommandFailure } from "../../application/commands/create-reminder/CreateReminderHandler";
 

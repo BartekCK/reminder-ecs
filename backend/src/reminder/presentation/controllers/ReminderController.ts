@@ -1,6 +1,6 @@
 import { IReminderController } from "./reminderController.interface";
 import { HttpRequest, HttpResponse } from "../../../common/http";
-import { INewReminderPropsDto, newReminderPropsSchema } from "../dto/NewReminder";
+import { INewReminderPropsDto, newReminderPropsSchema } from "../dto/newReminder";
 import { ICommandBus } from "../../../common/command-bus";
 import {
 	CreateReminderCommand,

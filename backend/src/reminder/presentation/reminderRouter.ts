@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { IReminderController } from "./controllers/reminderController.interface";
 import { HttpRequest, HttpResponse } from "../../common/http";
-import { INewReminderPropsDto } from "./dto/NewReminder";
+import { INewReminderPropsDto } from "./dto/newReminder";
 
 export class ReminderRouter {
 	private readonly reminderRouter = Router();
@@ -17,8 +17,7 @@ export class ReminderRouter {
 			"/:reminderId",
 			(
 				req: HttpRequest<null, { reminderId: string }, { userId: string }>,
-				res: HttpResponse,
-				next
+				res: HttpResponse
 			) => reminderController.deleteReminder(req, res)
 		);
 	}
